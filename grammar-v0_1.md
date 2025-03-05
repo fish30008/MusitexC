@@ -29,6 +29,7 @@ terminal simbols:   '(', ')', '.', '=', ':', ']', '[', '{', '}', '|', '---'
 
     <header section>    --->    <global define>
                         |       <copyright notice>
+                        |       <title>
 
 ```
 ## Header section

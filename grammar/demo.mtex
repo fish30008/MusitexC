@@ -1,10 +1,9 @@
-// header
 
 title: "Demo"
 
 tempo: 480
 
-key:
+key: 4
 
 time_signature : 4/4
 
@@ -22,7 +21,12 @@ my_fair = |: re_4 si_4 :|
 lady = |: mi do_4. :|
 
 
+begin track "London Bridge"
+
 piano : 
-   | 4 : london_bridge_is | falling_down | falling_down2 | falling_down | 
-   	 london_bridge_is | falling_down |    my_fair    |      lady   :|
+   | 4, : london_bridge_is | falling_down | falling_down2 | falling_down |
+   	  london_bridge_is | falling_down |    my_fair    |      lady   :|
+
+end track
+
 

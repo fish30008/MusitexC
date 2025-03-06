@@ -7,26 +7,21 @@ key: 4
 
 time_signature : 4/4
 
-scale (oct/octave) = | oct, 4/4, <minor/major notes> : do re mi fa | sol la si do :| 
+scale with(oct/octave) = | oct, 4/4, <minor/major notes> : do re mi fa | sol la si do :| 
 
 
-london_bridge_is = |: sol la sol si :|
+london_bridge_is =  sol la sol si 
 
-falling_down = |: mi fa sol_4 :|
+falling_down = mi fa sol_4
 
-falling_down2 = |: re mi fa_4 :|
+falling_down2 = re mi fa_4 
 
-my_fair = |: re_4 si_4 :|
+my_fair = re_4 si_4
 
-lady = |: mi do_4. :|
+lady = mi do_4.
 
 
-begin track "London Bridge"
 
-piano : 
+piano "london bridge": 
    | 4, : london_bridge_is | falling_down | falling_down2 | falling_down |
    	  london_bridge_is | falling_down |    my_fair    |      lady   :|
-
-end track
-
-

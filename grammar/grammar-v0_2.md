@@ -7,7 +7,9 @@
 
 <prog. header>    --->    <header section>*
 
-<header section>    --->   <title> <global define>
+   <header section>    --->    <global define>
+                        |       <copyright notice>
+                        |       <title>
 
 ```
 
@@ -19,6 +21,12 @@
                     |       key ':' <key_signature>
                     |       // to be added
 <title> ---> title ':' <string_literal>
+<copyright notice> ---> '©' <year> <copyright holder>
+
+<year> ---> <int_literal>
+
+<copyright holder> ---> <string_literal>
+
 ```
 
 ## Code section

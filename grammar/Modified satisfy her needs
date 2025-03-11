@@ -1,0 +1,61 @@
+<statement>    ---> <variable_decl>
+                    | <assignment>
+                    | <for_loop>
+                    | <if_statement>
+                    | <expr>
+
+<variable_decl> ---> ("int" | "const") <identifier> ["=" <expr>]
+
+<assignment>    ---> <identifier> "=" <expr>
+
+<for_loop>      ---> "for" <identifier> "in" <range> <semantic_group>
+
+<range>         ---> <expr> ".." <expr>
+
+<if_statement>  ---> "if" "(" <condition> ")" <semantic_group> ["else" <semantic_group>]
+
+<condition>     ---> <expr> <comparison_op> <expr>
+                    | <condition> "&&" <condition>
+                    | <condition> "||" <condition>
+                    | "!" <condition>
+                    | "(" <condition> ")"
+
+<comparison_op> ---> "==" | "!=" | "<" | ">" | "<=" | ">="
+
+<expr>          ---> (<note>)
+                    | <macro inlining>
+                    | <macro application>
+                    | <expression group>
+                    | <semantic group>
+                    | <expr>'*'<int_literal>
+                    | <term>
+                    | <expr> "+" <term>
+                    | <expr> "-" <term>
+
+<term>          ---> <int_literal>
+                    | <identifier>
+                    | <capture group>
+
+<capture group> ---> '(' <arg>+ ')'
+
+<semantic group> ---> '{' <token> <token>* '}'
+                
+<set group>     ---> '{' <token>+ '}'
+
+<expression group> ---> '[' <expr> <expr>* ']'
+
+<composition>   ---> '|' [(<int_literal> | <macro application> | <macro inlining>) ',' ] [ <int_literal>'/'<int_literal> ] [ ',' <major/minor notes>] ':' <expr> ':|'
+
+<macro inlining> ---> <identifier>
+
+<macro application> ---> <identifier>'('<expr>+')'
+
+<note>          ---> <note literal>['_'<int_literal>]['^'<int_literal>]"b"*"s"*
+
+<identifier>    ---> <letter> (<letter> | <digit>)*
+
+<letter>        ---> "a" | "b" | ... | "z" | "A" | "B" | ... | "Z" | "_"
+
+<digit>         ---> "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+
+<int_literal>   ---> <digit>+

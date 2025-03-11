@@ -8,7 +8,7 @@
 
 (comma separated list)+
 
-{grouping}
+{grouping} = produs_1_from_grouping | produs\_2_from_grouping | ... | last_produs_from_grouping
 
 {group1} - {group1} = {group1 without any elements from group2} 
 
@@ -27,11 +27,8 @@ If there is space between 2 terminals/non_terminals, then there can be any < whi
 
       <code section>    --->    [<statement>]
 
-      <prog. header>    --->    <header section>*
+      <prog. header>    --->  [<title>] [<global set prop.>] [<copyright notice>]
 
-    <header section>    --->    <global set prop.>
-                        |       <copyright notice>
-                        |       <title>
 ```
 ### Header section
 ```
@@ -78,16 +75,18 @@ If there is space between 2 terminals/non_terminals, then there can be any < whi
      <alpha numeric>    --->    <alpha>(<alpha> | <numeric | "_")*
             <number>    --->    <numeric><numeric>*
 
-         <delimiter>    --->    ("{" | "}" | "(" | ")" | "[" | "]" | ":" | "\"" | "," | "|"  | "/" | "=" | "#" | "'" | "." | '---' | "-" | "+" | ">" | "<" | "*")
+         <delimiter>    --->    ("{" | "}" | "(" | ")" | "[" | "]" | ":" | "\"" | "," | "|"  | "/" | "=" | "#" | "'" | "." | "-" | "+" | ">" | "<" | "*")
 
            <keyword>    --->    ("with" | "title" | "key" | "tempo" | "b" | "s" | "octave" | "time_signature" | "time_sig")
 
         <identifier>    --->    {<alpha numeric>} - {<keyword>}
+     <escaped_chars>    --->    {<char>} - {'"'} | "\n" | "\r" | "\t" | "\""
 ```
 ## Literals
 ```
       <note literal>    --->    ("do" ... "si") |("A" ... "G" )
        <int_literal>    --->    <numeric>*[ms]
+    <string_literal>    --->    '"'<escaped_chars>*'"'
 ```
 ## Statements
 ```
@@ -106,13 +105,13 @@ If there is space between 2 terminals/non_terminals, then there can be any < whi
                         |       <macro application>
                         |       <expression group>
                         |       <semantic group>
-                        |       <expr>'*'<int_literal>
+                        |       <expr>'*'<NUMERIC>
 
     <macro inlining>    --->    <identifier>
 
  <macro application>    --->    <identifier>'('<expr>+')'
 
-              <note>    --->    <note literal>['_'<int_literal>]['^'<int_literal>]"b"*"s"*
+              <note>    --->    <note literal>['-'<int_literal>]['^'<int_literal>]"b"*"s"*
 
 
-```
+``` 

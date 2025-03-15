@@ -1,0 +1,1 @@
+odin run . --out:mtexc_debug.exe --strict-style --debug -- %*

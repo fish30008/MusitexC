@@ -1,6 +1,5 @@
 < non terminal >
 
-*terminal*
 
 \[ zero of one occurrences ]
 
@@ -42,7 +41,7 @@ If there is space between 2 terminals/non_terminals, then there can be any < whi
                         |       key ':' <key_signature>
                         |       // to be added
 
-         <statement>    --->    (<macro definition> | <track>) ("\n" | ";")
+         <statement>    --->    (<macro definition> | <track> | <setting> | <set definition> | <movement>) ("\n" | ";")
 
 ```
 
@@ -60,7 +59,9 @@ If there is space between 2 terminals/non_terminals, then there can be any < whi
                 // Note: used for multiline expresions
    <expresion group>    --->    '[' <expr> <expr>* ']'
 
-       <composition>    --->    '|' [(<int_literal> | <macro aplication> | <macro inline>) ',' ] [ <int_literal>'/'<int_literal> ] [ ',' <major/minor notes>] ':' <expr> ':|'
+/* deprecated
+ * <composition>    --->    '|' [(<int_literal> | <macro aplication> | <macro inline>) ',' ] [ <int_literal>'/'<int_literal> ] [ ',' <major/minor notes>] ':' <expr> ':|'
+ */
 
 ```
 ## Sybols
@@ -81,6 +82,8 @@ If there is space between 2 terminals/non_terminals, then there can be any < whi
 
         <identifier>    --->    {<alpha numeric>} - {<keyword>}
      <escaped_chars>    --->    {<char>} - {'"'} | "\n" | "\r" | "\t" | "\""
+
+        <instrument>    --->    <identifier>
 ```
 ## Literals
 ```
@@ -91,16 +94,19 @@ If there is space between 2 terminals/non_terminals, then there can be any < whi
 ## Statements
 ```
 
-        <macro def.>    --->    <identifier> [with <capture group>] '=' (<expr>* | <composition>
+        <macro def.>    --->    <identifier> [with <capture group>] '=' <expr>*
 
+             <track>    --->    'track' [<string_literal>] '{' '}'
 
-             <track>    --->    <identifier> <string literal> ':' (<composition> | <note>*)
+          <movement>    --->    <instrument> [<string literal>] ':' <expr>*
 
           <set def.>    --->    <identifier> <set group>
+
 ```
 ## Expressions
 ```
-              <expr>    --->    (<note> )
+              <expr>    --->    ['(']<note> ['|']
+                        |       <note>[')'] ['|']
                         |       <macro inlining>
                         |       <macro application>
                         |       <expression group>

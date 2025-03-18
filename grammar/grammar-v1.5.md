@@ -79,7 +79,7 @@ If there is space between 2 terminals/non_terminals, then there can be any < whi
 5.   <alpha numeric>    --->    <alpha>(<alpha> | <numeric | "_")*
 6.          <number>    --->    <numeric><numeric>*
 
-7.       <delimiter>    --->    ("{" | "}" | "(" | ")" | "[" | "]" | ":" | "\"" | "," | "|"  | "/" | "=" | "#" | "'" | "." | "-" | "+" | ">" | "<" | "*")
+7.       <delimiter>    --->    ("{" | "}" | "(" | ")" | "[" | "]" | ":" | "\"" | "," | "|"  | "/" | "=" | "#" | "'" | "." | "-" | "+" | ">" | "<" | "*" | ";")
 
 8.         <keyword>    --->    ("with" | "title" | "copy_right" |"tempo" | "b" | "s" | "r" | "octave" | "m" | "measure")
 

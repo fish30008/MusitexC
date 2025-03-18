@@ -41,7 +41,7 @@ Statement :: union{
 	Macro_decl,
 	Track,
 	Movement,
-	Tagged_Movement,
+	Tagged_movement,
 	Set_decl,
 	Def,
 }
@@ -107,6 +107,10 @@ Movement :: struct{
 
 }
 
+Tagged_movement :: struct{
+	instrument : string,
+	tag	   : string,
+}
 // @movement_end
 
 

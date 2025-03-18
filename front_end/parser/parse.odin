@@ -19,7 +19,7 @@ when ODIN_DEBUG {print :: fmt.println
 	print :: proc(args: ..any, sep := " ", flush := true) {}}
 
 
-parse_test :: proc(){
+test_parse :: proc(){
 	fmt.println(size_of(Token))
 	args := os.args
 	prog_name,source_dir := args[0],args[1]

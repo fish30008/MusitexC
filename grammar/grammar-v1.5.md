@@ -35,74 +35,74 @@ If there is space between 2 terminals/non_terminals, then there can be any < whi
 2.           <title>    --->    title ':' <string_literal>
 ```
 
-### Statements
+### 3. Statements
 ```
-        <macro def.>    --->    <identifier> [with <capture group>] '=' <expr>*
+1.      <macro def.>    --->    <identifier> [with <capture group>] '=' <expr>*
 
-             <track>    --->    'track' [<string_literal>] '{' '}'
+2.           <track>    --->    'track' [<string_literal>] '{' '}'
 
-          <movement>    --->    <instrument> [<string literal>] ':' <expr>*
+3.        <movement>    --->    <instrument> [<string literal>] ':' <expr>*
 
-          <set def.>    --->    <identifier> <set group>
+4.        <set def.>    --->    <identifier> <set group>
 
-    <global setting>    --->    tempo ':' <int_literal>
+5.  <global setting>    --->    tempo ':' <int_literal>
                         |       ( measure | m )':'<measure_signature>
                         |       // to be added
 ```
 
-### Groups
+### 4. Groups
 ```
                 // Note: Used for arguments to macro definitions and macro applications
-     <capture group>    --->    '(' <arg>+ ')'
+1.   <capture group>    --->    '(' <arg>+ ')'
 
                 // Note: used for repetitions and defining a multiline expresion
-    <semantic group>    --->    '{' <token> <token>* '}'
+2.  <semantic group>    --->    '{' <token> <token>* '}'
                 
                 // Equivalent to the mathematal notion of a set. Is used to define restrictions on arguments. Set operations can be performed
-         <set group>    --->    '{' <token>+ '}'
+3.       <set group>    --->    '{' <token>+ '}'
 
                 // Note: used for multiline expresions
-   <expresion group>    --->    '[' <expr> <expr>* ']'
+4. <expresion group>    --->    '[' <expr> <expr>* ']'
 
 
 ```
 
-### Sybols
+### 5. Sybols
 ```
-       <white space>    --->    (" " | "\n" | "\t" )(" " | "\n" | "\t" )*
+1.     <white space>    --->    (" " | "\n" | "\t" )(" " | "\n" | "\t" )*
 
-             <token>    --->    <alpha numeric> | <number> | <delimiter>
+2.           <token>    --->    <alpha numeric> | <number> | <delimiter>
 
-             <alpha>    --->    ("a" ... "z" | "A" ... "Z")
-           <numeric>    --->    ("0" ... "9")
+3.           <alpha>    --->    ("a" ... "z" | "A" ... "Z")
+4.         <numeric>    --->    ("0" ... "9")
 
-     <alpha numeric>    --->    <alpha>(<alpha> | <numeric | "_")*
-            <number>    --->    <numeric><numeric>*
+5.   <alpha numeric>    --->    <alpha>(<alpha> | <numeric | "_")*
+6.          <number>    --->    <numeric><numeric>*
 
-         <delimiter>    --->    ("{" | "}" | "(" | ")" | "[" | "]" | ":" | "\"" | "," | "|"  | "/" | "=" | "#" | "'" | "." | "-" | "+" | ">" | "<" | "*")
+7.       <delimiter>    --->    ("{" | "}" | "(" | ")" | "[" | "]" | ":" | "\"" | "," | "|"  | "/" | "=" | "#" | "'" | "." | "-" | "+" | ">" | "<" | "*")
 
-           <keyword>    --->    ("with" | "title" | "copy_right" |"tempo" | "b" | "s" | "r" | "octave" | "m" | "measure")
+8.         <keyword>    --->    ("with" | "title" | "copy_right" |"tempo" | "b" | "s" | "r" | "octave" | "m" | "measure")
 
-        <identifier>    --->    {<alpha numeric>} - {<keyword>}
-     <escaped_chars>    --->    {<char>} - {'"'} | "\n" | "\r" | "\t" | "\""
+9.      <identifier>    --->    {<alpha numeric>} - {<keyword>}
+10.  <escaped_chars>    --->    {<char>} - {'"'} | "\n" | "\r" | "\t" | "\""
 
-        <instrument>    --->    <identifier>
+11.     <instrument>    --->    <identifier>
 
- <measure_signature>    --->    <numeric>'\'<numeric>
-```
-
-### Literals
-```
-      <note literal>    --->    ("do" ... "si") |("A" ... "G" )
-
-       <int_literal>    --->    <numeric>*[ms]
-
-    <string_literal>    --->    '"'<escaped_chars>*'"'
+12.   <measure_sig.>    --->    <numeric>'\'<numeric>
 ```
 
-### Expressions
+### 6. Literals
 ```
-              <expr>    --->    ['(']<note> ['|']
+1.    <note literal>    --->    ("do" ... "si") |("A" ... "G" )
+
+2.     <int_literal>    --->    <numeric>*[ms]
+
+3.  <string_literal>    --->    '"'<escaped_chars>*'"'
+```
+
+### 7. Expressions
+```
+1.            <expr>    --->    ['(']<note> ['|']
                         |       <note>[')'] ['|']
                         |       <macro inlining>
                         |       <macro application>
@@ -112,15 +112,15 @@ If there is space between 2 terminals/non_terminals, then there can be any < whi
                         |       <setting>
 
 
-    <macro inlining>    --->    <identifier>
+2.  <macro inlining>    --->    <identifier>
 
- <macro application>    --->    <identifier>'('<expr>+')'
+3.     <macro appl.>    --->    <identifier>'('<expr>+')'
 
-              <note>    --->    <note literal>['-'<int_literal>]['^'<int_literal>]"b"*"s"*
+4.            <note>    --->    <note literal>['-'<int_literal>]['^'<int_literal>]"b"*"s"*
                         |       'r'['-'<int_literal>]
                         |       <note>['/'<note>]
 
-           <setting>    --->    ('<' | '>')[<int_literal>]
+5.         <setting>    --->    ('<' | '>')[<int_literal>]
 ``` 
 
 ```

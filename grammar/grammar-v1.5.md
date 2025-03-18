@@ -122,3 +122,8 @@ If there is space between 2 terminals/non_terminals, then there can be any < whi
 
            <setting>    --->    ('<' | '>')[<int_literal>]
 ``` 
+
+```
+
+           <comment>    --->    '#'<text>'\n'
+```

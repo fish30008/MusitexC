@@ -3,11 +3,75 @@ package parser
 import "core:fmt"
 import str"core:strings"
 
+Parse_state :: enum {
+	// general
+	NONE,
+	STATEMENT,
+	EXPR,
+	EOF,
+
+	// header
+	H_TITLE,
+	H_CR,
+
+	// statements
+	S_MACRO_DEF,
+	S_SET_DEF,
+	S_MOVEMENT,
+	S_TAGGED_M,
+	S_GL_SETTING,
+
+	// collections
+	C_ARGS,
+	C_SEM_GROUP,
+	C_SET,
+	C_EXPR_GROUP,
+
+	// Expressions
+	E_MACRO_APL,
+	E_MACRO_INL,
+	E_NOTE,
+	E_SETTING,
+
+	// Error states
+	ERR,
+}
+
+
+parse_stack :[dynamic]Parse_state
+
+
+
+Tk_iter :: struct{
+	tokens:[]Token,
+	i:int,
+}
+
+Tk_next :: proc(iter:^Tk_iter)->Token{
+	iter.i= (iter.i + 1) % len(iter.tokens)-1
+	return iter.tokens[iter.i-1]
+}
+
+Tk_peek :: proc(iter:^Tk_iter)->Token{
+	return iter.tokens[(iter.i+1)%len(iter.tokens)-1]
+}
+
+parse :: proc(tokens:[]Token)->(ast:Ast){
+	ast.statements  = make([dynamic]Statement)
+	ast.definitions = make(map[string]Identifier)
+
+	iter := Tk_iter{tokens,0}
+
+	for {
+	
+	}
+
+	return
+}
 
 Ast :: struct {
 	statements  : [dynamic]Statement,
-	identifiers : map[string]Identifier,
-	tagged_mov  : map[string]^Statement,
+	definitions : map[string]Identifier,
 }
 
 Identifier :: struct{
@@ -32,8 +96,8 @@ print_ast :: proc(ast:^Ast){
 		fmt.println(statement)
 	}
 	fmt.println()
-	fmt.println("Identifiers:")
-	fmt.printf("%#v",ast.identifiers)
+	fmt.println("Definitions:")
+	fmt.printf("%#v",ast.definitions)
 }
 
 // @statement

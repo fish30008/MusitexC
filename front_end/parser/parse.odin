@@ -70,13 +70,15 @@ piano : macro | macro2(do b b, mi)
 
 	}
 
+	append(&token_stream, Token{
+		"eof",curr_line+1,0, .EOF
+	})
+
 	print_tokens(false)
 }
 
 
 //@parse
-
-parse :: proc(tokens:[dynamic]Token){}
 
 pop :: proc(stack:^[dynamic]Tokenize_state)->Tokenize_state{
 	if state,ok:=pop_safe(stack); ok{
@@ -110,6 +112,10 @@ tk :: proc(stream:^bio.Reader)->(ts:[]Token){
 		if stream.r == 0 {print("end of file"); break}
 
 	}
+
+	append(&token_stream, Token{
+		"eof",curr_line+1,0, .EOF
+	})
 
 	print_tokens(true)
 	
@@ -517,6 +523,8 @@ Token_type :: enum u8{
 	KW_R,
 	KW_OCTAVE, 
 	KW_MEASURE,
+
+	EOF, 
 }
 
 

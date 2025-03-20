@@ -80,11 +80,11 @@ piano : macro | macro2(do b b, mi)
 
 //@parse
 
-pop :: proc(stack:^[dynamic]Tokenize_state)->Tokenize_state{
+pop :: proc(stack:^[dynamic]$T)->T{
 	if state,ok:=pop_safe(stack); ok{
 		return state
 	}
-	return .NONE
+	return cast(T)0
 }
 
 //@tk

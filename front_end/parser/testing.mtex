@@ -23,7 +23,8 @@ piano : macro | macro2(do b b, mi)
 #	<\n>
 #	<macro2> <with> <(> <arg1> <,> <arg2> <)> <=> <arg1> <re> <mi> <arg2> <\n>
 #	<\n>
-#	<piano> <:> <macro> <|> <macro2> <(> <do> <b> <b> <,> <mi> <)> <\n>
+#	<piano> <:> <macro> <|> <macro2> <(> <do> <b> <b> <,> <mi> <)> <\n> <eof>
+#
 # 1. <\n> -> nothing prior, pass
 # 2. <title> -> parse title
 #	1. create statement

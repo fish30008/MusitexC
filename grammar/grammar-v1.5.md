@@ -146,7 +146,7 @@ More items to the header might be added later.
 
 ### 3. Statements
 
-1. "<macro def.>" defines a macro. It's composed of the name of the macro, an
+1. "< macro def. >" defines a macro. It's composed of the name of the macro, an
 < identifier >, optional arguments, '=', and a number of expressions.
 
 The 'with' keyword is used to make it easier to distiguish between macro definitions 
@@ -170,32 +170,32 @@ If a movement is named( has the optional string literal) then any other instance
 a movement with the same name is considered the continuation of that movement, in the 
 order that they are written.
 
-4. "<set def.>" defines a mathematical set for items in the languege. For now doesn't 
+4. "< set def. >" defines a mathematical set for items in the languege. For now doesn't 
 have a usecase, but was originally designed to allow the user to restrict arguments to
 a macro.
  
-5. "<global setting>" allows the user to set defaults for the entire file/track such as
+5. "< global setting >" allows the user to set defaults for the entire file/track such as
 tempo, measure or others.
 
 ### 4. Groups
 
-1. "<capture group>" a series of comma separated expressions. Used for defining macro
+1. "< capture group >" a series of comma separated expressions. Used for defining macro
 arguments and for providing arguments when calling macros.
 
-2. "<semantic group>" a series of tokens surrounded by curly braces. Serves to 
+2. "< semantic group >" a series of tokens surrounded by curly braces. Serves to 
 transofrm a series of tokens into expressions that can be repeated or passed to macros.
 
 If no repetition is applied and isn't passed to a macro, they do nothing.
 
-3. "<set group>" a comma separated list of expressions that can be used to define a set
+3. "< set group >" a comma separated list of expressions that can be used to define a set
 .
 
-4. "<expresion group>" a list of expressions between square braces. Used to define 
+4. "< expresion group >" a list of expressions between square braces. Used to define 
 expresions across mustiple lines without ending a statement.
 
 ### 5. Symbols
 
-1. "<white space>" defines non visible characters that are allowed and generally 
+1. "< white space >" defines non visible characters that are allowed and generally 
 ignored if are in series of more than one.
 
 2. "< token >" the semantical atom of code.
@@ -236,7 +236,7 @@ duration octave or accidentals)
     arguments. In this case, the body of the macro is essentially "copy pasted" in the
     location of the call
 
-    3. "<macro application>" defines the calling of a macro with arguments.
+    3. "< macro application >" defines the calling of a macro with arguments.
 
     4. 5.  States that these groups are an expression.
 
@@ -246,10 +246,10 @@ duration octave or accidentals)
     7. Defines the syntax for specifying a setting at a limited scope: within a 
     composition.
 
-2. "<macro inlining>" describes the syntax of inlining a macro by simply writing it's
+2. "< macro inlining >" describes the syntax of inlining a macro by simply writing it's
 name/identifier.
 
-3. "<macro appl.>" describes the syntax of applying a macro while providing arguments.
+3. "< macro appl. >" describes the syntax of applying a macro while providing arguments.
 
 These last 2 are separate expressions for parsing reasons(inlining macros is simply easier then applaying them)
 

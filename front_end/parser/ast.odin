@@ -6,6 +6,7 @@ import str"core:strings"
 Parse_state :: enum {
 	// general
 	NONE,
+	HEADER,
 	STATEMENT,
 	EXPR,
 	EOF,
@@ -55,30 +56,33 @@ parse_stack :[dynamic]Parse_state
 
 
 
-Tk_iter :: struct{
+iter :: struct{
 	tokens:[]Token,
 	i:int,
 }
 
-Tk_next :: proc(iter:^Tk_iter)->Token{
-	iter.i= (iter.i + 1) % len(iter.tokens)-1
+next :: #force_inline proc(iter:^iter)->Token{
+	iter.i= (iter.i + 1) % (len(iter.tokens)-1)
 	return iter.tokens[iter.i-1]
 }
 
-Tk_peek :: proc(iter:^Tk_iter)->Token{
-	return iter.tokens[(iter.i+1)%len(iter.tokens)-1]
+peek :: #force_inline proc(iter:^iter,n:int = 1)->Token{
+	return iter.tokens[(iter.i+n)%(len(iter.tokens)-1)]
 }
+
+
 
 parse :: proc(tokens:[]Token)->(ast:Ast){
 	ast.statements  = make([dynamic]Statement)
 	ast.definitions = make(map[string]Identifier)
 
-	iter := Tk_iter{tokens,0}
+	iter := iter{tokens,0}
 
 	loop: for  {
 		switch pop(&parse_stack){
 		case .NONE         : parse_none(&iter,&ast)
 		// general
+		case .HEADER	   : parse_header(&iter,&ast)
 		case .STATEMENT    : parse_statement(&iter,&ast)
 		case .EXPR         : parse_expr(&iter,&ast)
 
@@ -115,17 +119,61 @@ parse :: proc(tokens:[]Token)->(ast:Ast){
 	return
 }
 
-parse_none :: proc(iter: ^Tk_iter, ast: ^Ast){
-	switch Tk_next(iter){
-
+parse_none :: proc(iter: ^iter, ast: ^Ast){
+	#partial switch next(iter).type{
+	case .KW_TITLE , .KW_CR : 
+		if !ast.no_header{
+			append(&parse_stack, Parse_state.HEADER)
+			
+		}
 	}
 }
 
-parse_title :: proc(iter: ^Tk_iter, ast: ^Ast){}
-parse_copyright :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_header:: proc(iter: ^iter, ast: ^Ast){
+	// Keep parsing header until ---
+	append(&parse_stack, Parse_state.HEADER)
+
+	#partial switch peek(iter,0).type{
+	case .KW_TITLE : append(&parse_stack, Parse_state.H_TITLE)
+	case .KW_CR    : append(&parse_stack, Parse_state.H_CR)
+	case .DASH     : 
+		if peek(iter,1).type == .DASH &&  peek(iter,2).type == .DASH {
+			// ensure proper state
+			assert(pop(&parse_stack) == .HEADER)
+			assert(next(iter).type == .DASH)
+			assert(next(iter).type == .DASH)
+			assert(next(iter).type == .DASH)
+			ast.no_header = true
+		}
+	case :
+		fmt.print("Unexpected token during parsing of header: ", peek(iter,0))
+		append(&parse_stack, Parse_state.ERR)
+	}
+}
+
+parse_title :: proc(iter: ^iter, ast: ^Ast){
+	assert(next(iter).type == .KW_TITLE)
+	
+	if next(iter).type != .COLON{
+		fmt.print("Syntax error, keyword title must be fallowed by colon")
+		append(&parse_stack, Parse_state.ERR)
+		return
+	}
+
+	title := next(iter)
+	
+	assert(title.type == .STRING)
+	ast.title = title.str
+}
+parse_copyright :: proc(iter: ^iter, ast: ^Ast){
+
+}
 Ast :: struct {
+	title	    : string,
+	copyright   : string,
 	statements  : [dynamic]Statement,
 	definitions : map[string]Identifier,
+	no_header   : bool,
 }
 
 Identifier :: struct{
@@ -164,7 +212,7 @@ Set_def,
 Setting,
 }
 
-parse_statement :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_statement :: proc(iter: ^iter, ast: ^Ast){}
 // @statement_end
 
 // @expr
@@ -174,7 +222,7 @@ Expr :: struct{
 	next : ^Expr,
 }
 
-parse_expr :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_expr :: proc(iter: ^iter, ast: ^Ast){}
 Any_expr :: union{
 	Note,
 	Macro,
@@ -198,20 +246,20 @@ Any_expr :: union{
 			release,
 		}
 	//}
-parse_note :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_note :: proc(iter: ^iter, ast: ^Ast){}
 
 
 	Macro :: struct{
 		name : string,
 		args : Maybe([dynamic]string),
 	}
-parse_macro_apl :: proc(iter: ^Tk_iter, ast: ^Ast){}
-parse_macro_inl :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_macro_apl :: proc(iter: ^iter, ast: ^Ast){}
+parse_macro_inl :: proc(iter: ^iter, ast: ^Ast){}
 
 	Expr_group :: struct{
 		exprs : [dynamic]Expr,
 	}
-parse_expr_group :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_expr_group :: proc(iter: ^iter, ast: ^Ast){}
 
 	Setting :: union{Octave,}
 	//{
@@ -222,7 +270,7 @@ parse_expr_group :: proc(iter: ^Tk_iter, ast: ^Ast){}
 
 	//}
 
-	parse_setting :: proc(iter: ^Tk_iter, ast: ^Ast){}
+	parse_setting :: proc(iter: ^iter, ast: ^Ast){}
 	
 //}
 // @expr_end
@@ -236,7 +284,7 @@ Track	   :: struct{
 
 }
 
-parse_track :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_track :: proc(iter: ^iter, ast: ^Ast){}
 
 // @track_end
 
@@ -247,14 +295,14 @@ Movement :: struct{
 
 }
 
-parse_movement :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_movement :: proc(iter: ^iter, ast: ^Ast){}
 
 Tagged_movement :: struct{
 	instrument : string,
 	tag	   : string,
 }
 
-parse_tagged_m :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_tagged_m :: proc(iter: ^iter, ast: ^Ast){}
 
 // @movement_end
 
@@ -265,7 +313,7 @@ Macro_def :: struct{
 	args	   : Maybe([dynamic]string),
 	body	   : [dynamic]^Expr,
 }
-parse_macro_def :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_macro_def :: proc(iter: ^iter, ast: ^Ast){}
 
 // @macro_end
 
@@ -274,18 +322,18 @@ Set_def   :: struct{
 	identifier : string,
 	items	   : Set
 }
-parse_set_def :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_set_def :: proc(iter: ^iter, ast: ^Ast){}
 
 //{
 	Set :: map[^Identifier]struct{}
-parse_set :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_set :: proc(iter: ^iter, ast: ^Ast){}
 //}
 // @set_end
 
 
 // @def
 Gl_setting   :: struct{}
-parse_gl_setting :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_gl_setting :: proc(iter: ^iter, ast: ^Ast){}
 //@def_end
 
 // @Groups
@@ -294,15 +342,15 @@ Cap_group :: struct{
 
 }
 
-parse_args :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_args :: proc(iter: ^iter, ast: ^Ast){}
 
 Sem_group :: struct{}
 
-parse_sem_group :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_sem_group :: proc(iter: ^iter, ast: ^Ast){}
 
 // @Literals
 
 Literal :: union{}
 
 
-parse_err :: proc(iter: ^Tk_iter, ast: ^Ast){}
+parse_err :: proc(iter: ^iter, ast: ^Ast){}

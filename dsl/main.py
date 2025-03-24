@@ -3,6 +3,12 @@
 import sys
 #from new_parser import *
 from ai_ast import *
+from new_parser import *
+
+
+def todo(messege):
+    print(messege)
+    sys.exit(1)
 
 def main():
     # Sample input if no file is provided
@@ -12,9 +18,16 @@ def main():
 title:"testing parse"
 --- 
 tempo: 480
-piano : do re mi
+
+macro () = fa sol la ; piano : do re mi 
+
 """
 
+    todo("""
+- Implement proper error handling: use a list of errors and continue parsing from the next sensible point
+- Allow ';' to act as end of statement
+- Better error messeges
+    """)
     # Get source code from file or use sample
     if len(sys.argv) > 1:
         try:

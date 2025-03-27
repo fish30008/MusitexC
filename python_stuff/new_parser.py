@@ -22,9 +22,12 @@ class Parser:
     def match(self, token_type):
         if self.current_token.type == token_type:
             return self.advance()
-        raise SyntaxError(
-            f"Expected {token_type}, got {self.current_token.type} at line {self.current_token.line}, column {self.current_token.column}"
-        )
+        elif self.current_token.type != token_type:
+            return False
+        else:
+            raise SyntaxError(
+                f"Expected {token_type}, got {self.current_token.type} at line {self.current_token.line}, column {self.current_token.column}"
+            )
 
     def skip_newlines(self):
         """Skip any newline tokens"""
@@ -33,6 +36,7 @@ class Parser:
 
     def parse(self):
         # Create program node (root of AST)
+        #update metadata if you want to add for example
         metadata = Metadata()
         macros = []
         variables = []
@@ -50,11 +54,14 @@ class Parser:
                 self.parse_tempo(metadata)
             elif self.current_token.type == TokenType.KW_KEY:
                 self.parse_key(metadata)
+            elif self.current_token.type == TokenType.SEMICOLON:
+                self.advance()
             # Handle macro definition
             elif (self.current_token.type ==
-                  TokenType.ALPHANUM and self.peek().type == TokenType.OPEN_PAREN):
+                  TokenType.ALPHANUM and self.peek().type == TokenType.OPEN_PAREN or self.peek().type == TokenType.EQUAL):
                 macro = self.parse_macro_definition()
                 macros.append(macro)
+
             # Handle variable assignment
             elif self.current_token.type == TokenType.ALPHANUM and self.peek().type == TokenType.EQUAL:
                 variable = self.parse_variable_assignment()
@@ -110,56 +117,37 @@ class Parser:
             self.advance()
 
     def parse_macro_definition(self):
-        """Parse macro definition like 'my_macro() = do re mi' or 'my_macro2 with(first,last) = first re mi last'"""
+        """Parse macro definition like 'my_macro = do re mi' or 'my_macro2 with(first,last) = first re mi last'"""
         macro_name = self.match(TokenType.ALPHANUM).value
         parameters = []
 
         # Parse parameters
-        self.match(TokenType.OPEN_PAREN)
+        if (self.match(TokenType.OPEN_PAREN)):
 
         # If there are parameters (not empty parentheses)
-        if self.current_token.type != TokenType.CLOSE_PAREN:
-            # Parse first parameter
-            if self.current_token.type == TokenType.ALPHANUM:
-                parameters.append(self.current_token.value)
-                self.advance()
+            if self.current_token.type != TokenType.CLOSE_PAREN:
+                # Parse first parameter
+                if self.current_token.type == TokenType.ALPHANUM:
+                    parameters.append(self.current_token.value)
+                    self.advance()
 
-                # Parse additional parameters separated by commas
-                while self.current_token.type == TokenType.COMMA:
-                    self.advance()  # Skip comma
-                    if self.current_token.type == TokenType.ALPHANUM:
-                        parameters.append(self.current_token.value)
-                        self.advance()
-                    else:
-                        raise SyntaxError(
-                            f"Expected parameter name, got {self.current_token.type} at line {self.current_token.line}, column {self.current_token.column}")
-
-        self.match(TokenType.CLOSE_PAREN)
-
-        # Check for 'with' keyword (optional)
-        if self.current_token.type == TokenType.KW_WITH:
-            self.advance()
-            self.match(TokenType.OPEN_PAREN)
-
-            # Parse parameter names in with clause
-            if self.current_token.type == TokenType.ALPHANUM:
-                parameters.append(self.current_token.value)
-                self.advance()
-
-                while self.current_token.type == TokenType.COMMA:
-                    self.advance()  # Skip comma
-                    if self.current_token.type == TokenType.ALPHANUM:
-                        parameters.append(self.current_token.value)
-                        self.advance()
-                    else:
-                        raise SyntaxError(
-                            f"Expected parameter name, got {self.current_token.type} at line {self.current_token.line}, column {self.current_token.column}")
+                    # Parse additional parameters separated by commas
+                    while self.current_token.type == TokenType.COMMA:
+                        self.advance()  # Skip comma
+                        if self.current_token.type == TokenType.ALPHANUM:
+                            parameters.append(self.current_token.value)
+                            self.advance()
+                        else:
+                            raise SyntaxError(
+                                f"Expected parameter name, got {self.current_token.type} at line {self.current_token.line}, column {self.current_token.column}")
 
             self.match(TokenType.CLOSE_PAREN)
-
+            self.match(TokenType.EQUAL)
+            body = self.parse_macro_body()
+        else:
         # Parse equals sign and body
-        self.match(TokenType.EQUAL)
-        body = self.parse_macro_body()
+            self.match(TokenType.EQUAL)
+            body = self.parse_macro_body()
 
         # Expect a newline or EOF after macro definition
         if self.current_token.type == TokenType.NL:
@@ -172,12 +160,15 @@ class Parser:
         body = []
 
         # Parse notes, variables, etc. until end of line
-        while self.current_token.type not in [TokenType.NL, TokenType.EOF]:
+        while self.current_token.type not in [TokenType.NL, TokenType.SEMICOLON,  TokenType.EOF]:
             if self.current_token.type == TokenType.ALPHANUM:
                 element_value = self.current_token.value
                 self.advance()
 
                 # Check if it's a macro call
+                # if self.current_token.type == TokenType.SEMICOLON:
+                #     self.advance()
+                #     return body
                 if self.current_token.type == TokenType.OPEN_PAREN:
                     # Parse macro call
                     body.append(self.parse_macro_call_with_name(element_value))
@@ -190,14 +181,14 @@ class Parser:
         return body
 
     def parse_variable_assignment(self):
-        """Parse variable assignment like 'first = la'"""
         var_name = self.match(TokenType.ALPHANUM).value
         self.match(TokenType.EQUAL)
 
-        # Parse the value (currently only supporting single notes)
+        # Parse the value (currently only supporting several  notes)
         if self.current_token.type == TokenType.ALPHANUM:
             value = Note(self.current_token.value)
             self.advance()
+
         else:
             raise SyntaxError(
                 f"Expected note value, got {self.current_token.type} at line {self.current_token.line}, column {self.current_token.column}")
@@ -272,10 +263,8 @@ class Parser:
         return MacroCall(macro_name, arguments)
 
     def parse_separator(self):
-        """Parse a separator line (like '---')"""
         while self.current_token.type == TokenType.DASH:
             self.advance()
-        # Skip newline after separator
         if self.current_token.type == TokenType.NL:
             self.advance()
         return Separator()

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Copy, Trash, Archive, MoreHorizontal, Plus, RefreshCw, LogOut } from 'lucide-react';
+import { Download, Copy, Trash, Archive, MoreHorizontal, Plus, RefreshCw, LogOut, Music } from 'lucide-react';
 import ProjectService, { Project } from './services/ProjectService';
 import AccountDropdown from './AccountDropdown';
 
@@ -202,17 +202,88 @@ const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onNavigateToEdito
         setSelectedProjects([]);
     };
 
+    // Custom CSS for piano key effect
+    const pianoKeyStyle = `
+        .piano-key-effect {
+            position: relative;
+            transition: all 0.1s ease;
+            transform-origin: top center;
+        }
+        
+        .piano-key-effect:hover {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .piano-key-effect:active {
+            transform: translateY(3px) scale(0.96);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .pulse-effect {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+        
+        .sound-wave-bg {
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                url("data:image/svg+xml,%3Csvg width='100' height='50' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 25 Q 25 5 50 25 T 100 25' stroke='%23bfdbfe' fill='none' stroke-width='2' opacity='0.3'/%3E%3C/svg%3E");
+            background-size: 100px 50px;
+            background-repeat: repeat-x;
+            background-position: center;
+        }
+    `;
+
+    // Musical Note Icon Component
+    const MusicalNote = () => (
+        <svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" className="inline-block mr-2">
+            <path d="M7 0v8.5a2.5 2.5 0 11-1-2V0h1zM1.5 11a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+        </svg>
+    );
+
+    // Sheet Music Icon Component (replacing FileMusic)
+    const SheetMusicIcon = ({ size = 16, className = "" }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+            <path stroke="#fff" strokeWidth="1.5" d="M14 2v6h6M9 13h6M9 17h6"/>
+            <path fill="#fff" d="M12 8h2v2h-2zM12 11h2v2h-2z"/>
+        </svg>
+    );
+
+    // Treble Clef Icon Component
+    const TrebleClef = ({ className = "" }) => (
+        <svg className={className} width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C11.5 2 11 2.19 10.59 2.59C10.2 2.99 10 3.5 10 4V10.42C9.4 10.15 8.73 10 8 10C5.79 10 4 11.79 4 14S5.79 18 8 18C10.21 18 12 16.21 12 14V7.41L13.41 8.82C13.78 9.19 14.3 9.41 14.84 9.41C15.11 9.41 15.39 9.35 15.64 9.23C16.43 8.88 16.8 8 16.45 7.21L13.59 1C13.41 0.64 13.07 0.39 12.67 0.31C12.45 0.27 12.23 0.25 12 0.25V2M8 12C9.1 12 10 12.9 10 14S9.1 16 8 16S6 15.1 6 14S6.9 12 8 12Z"/>
+        </svg>
+    );
+
     return (
         <div className="flex h-screen bg-gray-50">
+            <style>{pianoKeyStyle}</style>
+
             {/* Sidebar */}
             <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
                 <div className="p-4 border-b border-gray-200">
                     <div className="flex items-center space-x-2">
-                        <svg className="w-8 h-8 text-green-600" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                        </svg>
+                        <TrebleClef className="w-8 h-8 text-blue-800" />
                         <div>
-                            <h1 className="text-lg font-bold text-green-600">MusicTex</h1>
+                            <h1 className="text-lg font-bold text-blue-800">MusicTex</h1>
                             <p className="text-xs text-gray-500">A Digital Music Solution</p>
                         </div>
                     </div>
@@ -220,7 +291,7 @@ const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onNavigateToEdito
 
                 <div className="p-4">
                     <button
-                        className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center justify-center"
+                        className="w-full py-2 bg-blue-800 text-white rounded hover:bg-blue-900 flex items-center justify-center piano-key-effect"
                         onClick={handleNewProject}
                     >
                         <Plus size={16} className="mr-1" />
@@ -231,44 +302,54 @@ const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onNavigateToEdito
                 <nav className="flex-1 overflow-y-auto">
                     <ul className="p-2">
                         <li
-                            className={`px-2 py-1 mb-1 rounded cursor-pointer ${currentCategory === 'all'
-                                ? 'bg-green-50 text-green-700'
+                            className={`px-2 py-1 mb-1 rounded cursor-pointer flex items-center ${currentCategory === 'all'
+                                ? 'bg-blue-50 text-blue-800'
                                 : 'text-gray-700 hover:bg-gray-100'}`}
                             onClick={() => handleCategoryChange('all')}
                         >
-                            <span className="block">All Projects</span>
+                            {currentCategory === 'all' && <MusicalNote />}
+                            <SheetMusicIcon size={16} className="mr-2" />
+                            <span>All Projects</span>
                         </li>
                         <li
-                            className={`px-2 py-1 mb-1 rounded cursor-pointer ${currentCategory === 'yours'
-                                ? 'bg-green-50 text-green-700'
+                            className={`px-2 py-1 mb-1 rounded cursor-pointer flex items-center ${currentCategory === 'yours'
+                                ? 'bg-blue-50 text-blue-800'
                                 : 'text-gray-700 hover:bg-gray-100'}`}
                             onClick={() => handleCategoryChange('yours')}
                         >
-                            <span className="block">Your Projects</span>
+                            {currentCategory === 'yours' && <MusicalNote />}
+                            <SheetMusicIcon size={16} className="mr-2" />
+                            <span>Your Projects</span>
                         </li>
                         <li
-                            className={`px-2 py-1 mb-1 rounded cursor-pointer ${currentCategory === 'shared'
-                                ? 'bg-green-50 text-green-700'
+                            className={`px-2 py-1 mb-1 rounded cursor-pointer flex items-center ${currentCategory === 'shared'
+                                ? 'bg-blue-50 text-blue-800'
                                 : 'text-gray-700 hover:bg-gray-100'}`}
                             onClick={() => handleCategoryChange('shared')}
                         >
-                            <span className="block">Shared with you</span>
+                            {currentCategory === 'shared' && <MusicalNote />}
+                            <SheetMusicIcon size={16} className="mr-2" />
+                            <span>Shared with you</span>
                         </li>
                         <li
-                            className={`px-2 py-1 mb-1 rounded cursor-pointer ${currentCategory === 'archived'
-                                ? 'bg-green-50 text-green-700'
+                            className={`px-2 py-1 mb-1 rounded cursor-pointer flex items-center ${currentCategory === 'archived'
+                                ? 'bg-blue-50 text-blue-800'
                                 : 'text-gray-700 hover:bg-gray-100'}`}
                             onClick={() => handleCategoryChange('archived')}
                         >
-                            <span className="block">Archived Projects</span>
+                            {currentCategory === 'archived' && <MusicalNote />}
+                            <SheetMusicIcon size={16} className="mr-2" />
+                            <span>Archived Projects</span>
                         </li>
                         <li
-                            className={`px-2 py-1 mb-1 rounded cursor-pointer ${currentCategory === 'trashed'
-                                ? 'bg-green-50 text-green-700'
+                            className={`px-2 py-1 mb-1 rounded cursor-pointer flex items-center ${currentCategory === 'trashed'
+                                ? 'bg-blue-50 text-blue-800'
                                 : 'text-gray-700 hover:bg-gray-100'}`}
                             onClick={() => handleCategoryChange('trashed')}
                         >
-                            <span className="block">Trashed Projects</span>
+                            {currentCategory === 'trashed' && <MusicalNote />}
+                            <SheetMusicIcon size={16} className="mr-2" />
+                            <span>Trashed Projects</span>
                         </li>
                     </ul>
                 </nav>
@@ -277,7 +358,7 @@ const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onNavigateToEdito
                 <div className="p-4 border-t border-gray-200">
                     <button
                         onClick={onLogout}
-                        className="w-full py-2 text-gray-700 hover:bg-gray-100 rounded flex items-center justify-center"
+                        className="w-full py-2 text-gray-700 hover:bg-gray-100 rounded flex items-center justify-center piano-key-effect"
                     >
                         <LogOut size={16} className="mr-2" />
                         <span>Log Out</span>
@@ -295,13 +376,13 @@ const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onNavigateToEdito
                         </div>
                         <div className="flex items-center space-x-4">
                             <button
-                                className="text-gray-600 hover:text-gray-800 flex items-center"
+                                className="text-gray-600 hover:text-gray-800 flex items-center piano-key-effect px-3 py-1 rounded"
                                 onClick={loadProjects}
                             >
                                 <RefreshCw size={16} className="mr-1" />
                                 <span>Refresh</span>
                             </button>
-                            <a href="#" className="text-gray-600 hover:text-gray-800">Templates</a>
+                            <a href="#" className="text-gray-600 hover:text-gray-800 piano-key-effect px-3 py-1 rounded">Templates</a>
                             <AccountDropdown
                                 onLogout={onLogout}
                                 onSettings={handleSettings}
@@ -352,7 +433,7 @@ const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onNavigateToEdito
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Last Modified
                                 </th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
@@ -361,25 +442,29 @@ const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onNavigateToEdito
                             {filteredProjects.length === 0 ? (
                                 <tr>
                                     <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                                        {searchQuery ? (
-                                            <div>
-                                                <p>No projects match your search.</p>
-                                                <p className="mt-1 text-sm">Try a different search term or clear the search.</p>
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <p>You don't have any projects in this category yet.</p>
-                                                {currentCategory === 'all' && (
-                                                    <button
-                                                        className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 inline-flex items-center"
-                                                        onClick={handleNewProject}
-                                                    >
-                                                        <Plus size={16} className="mr-1" />
-                                                        <span>Create your first project</span>
-                                                    </button>
-                                                )}
-                                            </div>
-                                        )}
+                                        <div className="sound-wave-bg py-8">
+                                            {searchQuery ? (
+                                                <div>
+                                                    <Music size={48} className="mx-auto mb-4 text-gray-400" />
+                                                    <p>No projects match your search.</p>
+                                                    <p className="mt-1 text-sm">Try a different search term or clear the search.</p>
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <Music size={48} className="mx-auto mb-4 text-gray-400" />
+                                                    <p>You don't have any projects in this category yet.</p>
+                                                    {currentCategory === 'all' && (
+                                                        <button
+                                                            className="mt-2 px-4 py-2 bg-blue-800 text-white rounded hover:bg-blue-900 inline-flex items-center piano-key-effect"
+                                                            onClick={handleNewProject}
+                                                        >
+                                                            <Plus size={16} className="mr-1" />
+                                                            <span>Create your first project</span>
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
@@ -411,10 +496,10 @@ const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onNavigateToEdito
                                             {ProjectService.formatDate(project.lastModified)} by {project.lastModifiedBy}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div className="flex space-x-2">
+                                            <div className="flex justify-end space-x-2">
                                                 {(currentCategory === 'archived' || currentCategory === 'trashed') ? (
                                                     <button
-                                                        className="text-green-500 hover:text-green-700"
+                                                        className="text-blue-700 hover:text-blue-900 piano-key-effect p-1 rounded"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleRestoreProject(project.id);
@@ -426,7 +511,7 @@ const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onNavigateToEdito
                                                 ) : (
                                                     <>
                                                         <button
-                                                            className="text-gray-500 hover:text-gray-700"
+                                                            className="text-gray-500 hover:text-gray-700 piano-key-effect p-1 rounded"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 console.log(`Download project ${project.id}`);
@@ -437,7 +522,7 @@ const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onNavigateToEdito
                                                             <Download size={18} />
                                                         </button>
                                                         <button
-                                                            className="text-gray-500 hover:text-gray-700"
+                                                            className="text-gray-500 hover:text-gray-700 piano-key-effect p-1 rounded"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 handleDuplicateProject(project.id);
@@ -447,7 +532,7 @@ const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onNavigateToEdito
                                                             <Copy size={18} />
                                                         </button>
                                                         <button
-                                                            className="text-gray-500 hover:text-gray-700"
+                                                            className="text-gray-500 hover:text-gray-700 piano-key-effect p-1 rounded"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 handleArchiveProject(project.id);
@@ -459,7 +544,7 @@ const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onNavigateToEdito
                                                     </>
                                                 )}
                                                 <button
-                                                    className="text-gray-500 hover:text-gray-700"
+                                                    className="text-gray-500 hover:text-gray-700 piano-key-effect p-1 rounded"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleDeleteProject(project.id);

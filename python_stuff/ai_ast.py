@@ -129,14 +129,14 @@ class SetTone(ASTNode):
     def __str__(self):
         return f"set(Semitone for {self.note} = {self.n})"
 
-class bar(ASTNode):
+class Bar(ASTNode):
     def __init__(self,source):
         super().__init__(source)
     
     def __str__(self):
         return f" bar "
 
-class setInterval(ASTNode):
+class SetInterval(ASTNode):
     def __init__(self,time,source):
         super().__init__(source)
         self.time = time
@@ -152,7 +152,7 @@ class temp(ASTNode):
         return f"temp"
 
 ## Collections/groups
-class exprGroup(ASTNode):
+class ExprGroup(ASTNode):
     def __init__(self,exprs,source):
         super().__init__(source)
         self.exprs = exprs
@@ -162,8 +162,8 @@ class exprGroup(ASTNode):
 
 ### errors
 
-class errExpr(ASTNode):
-
+# class errExpr(ASTNode):
+#
 
 
 
@@ -209,12 +209,25 @@ def traverse_ast(node, indent=0):
         for expr in node.expr:
             result.append(traverse_ast(expr, indent+2))
 
-    elif isinstance(node, SetOctave) or isinstance(node,SetDuration) or isinstance(node, SetTone) or isinstance(node, MacroCall) or isinstance(node, Note):
+    elif( isinstance(node, SetOctave) or
+          isinstance(node, SetDuration) or
+          isinstance(node, SetTempo) or
+          isinstance(node, SetTone) or
+          isinstance(node, SetInterval) or
+          isinstance(node, MacroCall) or
+          isinstance(node, Note) or
+          isinstance(node, Bar)
+         ):
+
         return f"{prefix}{node}"
 
-    todo: finish this
+    elif isinstance(node, ExprGroup)
+        result.append(f"{prefix}[")
 
-        
+        for expr in node.exprs:
+            result.append(traverse_ast(expr,indent+2))
+
+        resutl.append(f"{prefix}]")
 
     return "\n".join(result) if isinstance(result, list) else result
 

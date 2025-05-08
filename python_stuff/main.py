@@ -23,11 +23,7 @@ macro () = fa sol la ; piano : do re mi
 
 """
 
-    todo("""
-- Implement proper error handling: use a list of errors and continue parsing from the next sensible point
-- Allow ';' to act as end of statement
-- Better error messeges
-    """)
+
     # Get source code from file or use sample
     if len(sys.argv) > 1:
         try:
@@ -41,6 +37,7 @@ macro () = fa sol la ; piano : do re mi
 
     # Tokenize the source code
     tokenizer = Tokenizer(source_code)
+    print(Tokenizer)
     tokens = tokenizer.tokenize()
 
     # Print the tokens
@@ -58,6 +55,12 @@ macro () = fa sol la ; piano : do re mi
     # Print the AST
     # print("=== AST ===")
     print(traverse_ast(x))
+
+    todo("""
+- Implement proper error handling: use a list of errors and continue parsing from the next sensible point
+- Allow ';' to act as end of statement
+- Better error messeges
+    """)
 
 if __name__ == "__main__":
     main()

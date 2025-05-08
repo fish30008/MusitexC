@@ -11,6 +11,7 @@ class Parser:
         self.current_token = None
         self.parse_stack = []
         self.ast = AST()
+        self.syntx_err = []
 
         # Initialize with first token
         if tokens:
@@ -87,7 +88,7 @@ class Parser:
     def match(self, token_type):
         if self.current_token.type == token_type:
             return self.advance()
-        raise SyntaxError(
+        self.syntx_err.append(
             f"Expected {token_type}, got {self.current_token.type} at line {self.current_token.line}, column {self.current_token.column}")
 
     def parse_none(self):

@@ -51,11 +51,11 @@ const AccountDropdown: React.FC<AccountDropdownProps> = ({
         <div className="relative" ref={dropdownRef}>
             {/* Avatar button */}
             <button
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 hover:bg-green-200 focus:outline-none"
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 focus:outline-none"
                 onClick={() => setIsOpen(!isOpen)}
                 title="Account"
             >
-                <User size={16} className="text-green-600" />
+                <User size={16} className="text-blue-800" />
             </button>
 
             {/* Dropdown menu */}

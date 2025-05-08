@@ -1,1 +1,0 @@
-odin run . --out:mtexc.exe --strict-style --o:speed -- %*

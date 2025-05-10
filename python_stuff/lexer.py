@@ -10,6 +10,7 @@ class TokenType:
     COMMA = "COMMA"
     PIPE = "PIPE"
     SLASH = "SLASH"
+    BANG = "BANG"
     EQUAL = "EQUAL"
     NL = "NL"
     SINGLE_QUOTE = "SINGLE_QUOTE"
@@ -20,6 +21,7 @@ class TokenType:
     LESS_THAN = "LESS_THAN"
     ASTERISK = "ASTERISK"
     SEMICOLON = "SEMICOLON"
+    SPACE = "SPACE"
 
     # Literals
     ALPHANUM = "ALPHANUM"
@@ -28,18 +30,22 @@ class TokenType:
 
     # Keywords
     KW_MACRO = 'KW_MACRO'
-    KW_WITH = "KW_WITH"
+    KW_TRACK = 'TRACK'
     KW_TITLE = "KW_TITLE"
     KW_CR = "KW_CR"
-    KW_KEY = "KW_KEY"
-    KW_TEMPO = "KW_TEMPO"
-    KW_B = "KW_B"
-    KW_S = "KW_S"
     KW_R = "KW_R"
-    KW_OCTAVE = "KW_OCTAVE"
-    KW_MEASURE = "KW_MEASURE"
 
     EOF = "EOF"
+
+    # notes
+    do = "do"
+    re = "re"
+    mi = "mi"
+    fa = "fa"
+    sol = "sol"
+    la = "la"
+    si = "si"
+
 
 
 class Token:
@@ -62,7 +68,8 @@ class Tokenizer:
         self.tokens = []
 
     def tokenize(self):
-        while self.pos < len(self.source):
+
+        while self.pos < len(self.source) -1:
             self.tokenize_next()
 
         # Add EOF token
@@ -92,8 +99,11 @@ class Tokenizer:
         char = self.peek()
 
         # Skip whitespace except newlines
-        if char in ' \t\r':
-            self.advance()
+        if char in ' \t':
+            self.tokens.append(Token(char, self.line, self.column, TokenType.SPACE))
+            while char in ' \t':
+                self.advance()
+                char = self.peek()
             return
 
         # Handle newlines
@@ -119,6 +129,7 @@ class Tokenizer:
 
         # Handle strings
         if char == '"':
+
             self.tokenize_string()
             return
 
@@ -134,12 +145,13 @@ class Tokenizer:
     def tokenize_comment(self):
         self.advance()
 
-        while self.peek() is not None and self.peek() != '\n':
+        while self.peek() is not None and self.peek() in '\n\r':
             self.advance()
 
 
 
     def tokenize_identifier(self):
+
         start_pos = self.pos
         start_line = self.line
         start_column = self.column
@@ -177,6 +189,7 @@ class Tokenizer:
         self.tokens.append(Token(number, start_line, start_column, TokenType.NUM))
 
     def tokenize_string(self):
+
         start_pos = self.pos
         start_line = self.line
         start_column = self.column
@@ -228,6 +241,8 @@ class Tokenizer:
             token_type = TokenType.PIPE
         elif char == '/':
             token_type = TokenType.SLASH
+        elif char == '!':
+            token_type = TokenType.BANG
         elif char == '=':
             token_type = TokenType.EQUAL
         elif char == "'":
@@ -251,20 +266,20 @@ class Tokenizer:
         self.advance()
 
     def is_delimiter(self, char):
-        return char in "{}()[]:\",/='.-><*;+|"
+        return char in "{}()[]:\",/='.-><*;+|!"
 
     def get_keyword_type(self, word):
         keywords = {
-            "with": TokenType.KW_WITH,
             "title": TokenType.KW_TITLE,
             "copy_right": TokenType.KW_CR,
-            "key": TokenType.KW_KEY,
-            "tempo": TokenType.KW_TEMPO,
-            "b": TokenType.KW_B,
-            "s": TokenType.KW_S,
             "r": TokenType.KW_R,
-            "octave": TokenType.KW_OCTAVE,
-            "measure": TokenType.KW_MEASURE,
-            "m": TokenType.KW_MEASURE
+            "track": TokenType.KW_TRACK,
+            "do":TokenType.do ,
+            "re":TokenType.re ,
+            "mi":TokenType.mi ,
+            "fa":TokenType.fa ,
+            "sol":TokenType.sol ,
+            "la":TokenType.la ,
+            "si":TokenType.si ,
         }
         return keywords.get(word)

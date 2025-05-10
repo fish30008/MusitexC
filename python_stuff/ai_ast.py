@@ -34,8 +34,8 @@ class Metadata(ASTNode):
 ### Statements:
 
 class Macro(ASTNode):
-    def __init__(self, name, parameters, body,source):
-        super().__init__(source)
+    def __init__(self, name, parameters, body):
+        super().__init__(name)
         self.name = name
         self.parameters = parameters
         self.body = body
@@ -48,14 +48,15 @@ class Track(ASTNode):
     def __init__(self, name, movements,source):
         super().__init__(source)
         self.name = name
-        self.elements = movements
+        self.movements = movements
 
     def __str__(self):
-        return f"Track(name={self.name}, movements={self.elements})"
+        return f"Track(name={self.name}, movements={self.movements})"
 
 class Movement(ASTNode):
-    def __init__(self, tag, expressions,source):
-        super().__init__(source)
+    def __init__(self,instrument, tag, expressions):
+        super().__init__(instrument)
+        self.instrument = instrument
         self.tag = tag
         self.expressions = expressions
 
@@ -65,35 +66,65 @@ class Movement(ASTNode):
 
 ### Expressions
 
-class Note(ASTNode):
-    def __init__(self, value,octave,duration,source):
+class Ident(ASTNode):
+    def __init__(self,source):
         super().__init__(source)
+        self.ident = source 
+
+    def __str__(self):
+        return f"Identifier={self.ident}"
+
+class ReleaseNote(ASTNode):
+    def __init__(self,source):
+        super().__init__(source)
+    
+    def __str__(self):
+        return f"release"
+
+class HoldNote(ASTNode):
+    def __init__(self,note,source):
+        super().__init__(source)
+        self.note = note
+    
+    def __str__(self):
+        return f"hold({self.note})"
+
+class Note(ASTNode):
+    def __init__(self, value,semitone,octave,duration):
+        super().__init__(value)
         self.value = value
+        self.semitone = semitone
         self.octave = octave
         self.duration = duration
 
 
     def __str__(self):
-        return f"Note({self.value}, octave={self.octave}, duration={self.duration})"
+        return f"Note({self.value},semitone={self.semitone}, octave={self.octave}, duration={self.duration})"
 
+class Chord(ASTNode):
+    def __init__(self,notes,source):
+        super().__init__(source)
+        self.notes = notes
+
+    def __str__(self):
+        return f"Chord{self.notes}"
 
 class MacroCall(ASTNode):
-    def __init__(self, name, arguments,source):
-        super().__init__(source)
+    def __init__(self, name, arguments):
+        super().__init__(name)
         self.name = name
         self.arguments = arguments
     def __str__(self):
         return f"MacroCall(name={self.name}, arguments={self.arguments or []})"
 
 class Repetition(ASTNode):
-    def __init__(self, expr, times, source):
+    def __init__(self, times, source):
         super().__init__(source)
-        self.expr = expr
         self.times = times
         self.source = source
     
     def __str__(self):
-        return f"Repeat({self.expr}*{self.times})"
+        return f"Repeat*{self.times})"
 
 class SetOctave(ASTNode):
     def __init__(self,dir, n,source):
@@ -112,8 +143,16 @@ class SetDuration(ASTNode):
     def __str__(self):
         return f"set(Duration={self.dur})"
 
+class Fraction:
+    def __init__(self,x,over):
+        self.x = x
+        self.over = over
+
+    def __str__(self):
+        return f"{self.x}/{self.over}"
+
 class SetTempo(ASTNode):
-    def __init__(self,n):
+    def __init__(self,n,source):
         super().__init__(source)
         self.n = n
 
@@ -137,8 +176,8 @@ class Bar(ASTNode):
         return f" bar "
 
 class SetInterval(ASTNode):
-    def __init__(self,time,source):
-        super().__init__(source)
+    def __init__(self,time):
+        super().__init__(time)
         self.time = time
     
     def __str__(self):
@@ -158,7 +197,7 @@ class ExprGroup(ASTNode):
         self.exprs = exprs
     
     def __str__(self):
-        return f"exprGroup{{ {self.expr} }}"
+        return f"exprGroup{{ {self.exprs} }}"
 
 ### errors
 
@@ -168,13 +207,15 @@ class ExprGroup(ASTNode):
 
 
 
-def traverse_ast(node, indent=0):
+def traverse_ast(node, indent):
     prefix = "  " * indent
     result = []
 
     if isinstance(node, Program):
         result.append(f"{prefix}Program:")
-        result.append(traverse_ast(node.metadata, indent + 1))
+        if node.metadata:
+            for meta in node.metadata:
+                result.append(traverse_ast(meta, indent + 1))
 
         if node.macros:
             result.append(f"{prefix}Macros:")
@@ -204,30 +245,54 @@ def traverse_ast(node, indent=0):
         for element in node.movements:
             result.append(traverse_ast(element, indent + 2))
 
+    elif isinstance(node,Movement):
+        result.append(f"{prefix}{node.instrument.value} {"" if node.tag == "" else node.tag.value} = ")
+        if isinstance(node.expressions, ExprGroup):
+            bruh()
+
+        for element in node.expressions:
+            result.append(traverse_ast(element,indent+2))
+
     elif isinstance(node, Repetition):
-        result.append(f"{prefix}Repeat*{node.times}:")
-        for expr in node.expr:
-            result.append(traverse_ast(expr, indent+2))
+        result.append(f"{prefix}Repeat*{node.times}")
+
+    elif isinstance(node, HoldNote):
+        result.append(f"{prefix}Hold(\n{prefix}{traverse_ast(node.note,indent)}\n{prefix})")
 
     elif( isinstance(node, SetOctave) or
           isinstance(node, SetDuration) or
           isinstance(node, SetTempo) or
           isinstance(node, SetTone) or
           isinstance(node, SetInterval) or
-          isinstance(node, MacroCall) or
           isinstance(node, Note) or
-          isinstance(node, Bar)
+          isinstance(node, Bar) or
+          isinstance(node, Ident) or
+          isinstance(node, ReleaseNote) 
          ):
 
         return f"{prefix}{node}"
 
-    elif isinstance(node, ExprGroup)
+    elif isinstance(node,MacroCall):
+        result.append(f"{prefix}{node.name.value}(")
+
+        for expr in node.arguments:
+            result.append(traverse_ast(expr,indent+2))
+        result.append(f"{prefix})")
+
+    elif isinstance(node, ExprGroup):
         result.append(f"{prefix}[")
 
         for expr in node.exprs:
             result.append(traverse_ast(expr,indent+2))
 
-        resutl.append(f"{prefix}]")
+        result.append(f"{prefix}]")
 
+    elif isinstance(node, Chord):
+        result.append(f"{prefix}Chord:")
+        for note in node.notes:
+            result.append(f"{prefix}{traverse_ast(note,indent)}\\")
+    
+    else:
+        raise ValueError(f"Unhandled case: {type(node)}")
     return "\n".join(result) if isinstance(result, list) else result
 

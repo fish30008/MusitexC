@@ -230,6 +230,23 @@ class Parser:
 
 # simple expressions
 
+        # Parse SetTone
+        elif self.match(TokenType.PLUS):
+            source = self.advance()
+            if self.peek(0).type in NOTES:
+                note = self.advance()
+                expression = SetTone(1,note,source)
+            else:
+                raise SyntaxError(f"Expected note literal after plus{self.log_tk()}")
+
+        elif self.match(TokenType.DASH):
+            source = self.advance()
+            if self.peek(0).type in NOTES:
+                note = self.advance()
+                expression = SetTone(-1,note,source)
+            else:
+                raise SyntaxError(f"Expected note literal after dash{self.log_tk}")
+
         # Parse SetOctave
         elif self.match(TokenType.GREATER_THAN):
             source = self.advance()

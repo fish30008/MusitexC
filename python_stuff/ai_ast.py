@@ -1,5 +1,6 @@
 # AST Node classes
 from lexer import *
+
 class ASTNode:
     def __init__(self, source):
         self.source = source

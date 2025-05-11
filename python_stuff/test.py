@@ -18,7 +18,9 @@ piano : do+.4:4 re-.4:/4 | > :4 !3/4 mi
 
 piano "not piano" : [
 
+    +do
 
+    -re
 
     (do/mi/sol.4 10 r:10 
 

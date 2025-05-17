@@ -11,7 +11,9 @@ title : "demo"
 
 
 macro2 (arg1, arg2) = arg1 do re arg2
-macro = do re mi
+
+macro = do re mi macro_1
+macro_1 = fa sol la
 
 
 track "main":

@@ -89,7 +89,8 @@ class Parser:
                     
                     # if it's a macro, it needs to be added to ident list
                     if ident.value in self.idents.keys():
-                        raise SyntaxError(f"Identifier {ident.value} is already used here:{self.idents[ident.value]}, redefinitions are not allowed")
+                        if not isinstance(self.idents[ident.value],Token) :
+                            raise SyntaxError(f"Identifier {ident.value} is already used here:{self.idents[ident.value]}, redefinitions are not allowed")
                     self.idents[ident.value] = ident
 
                     self.stack.append(ParseState.MACRO)

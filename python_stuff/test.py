@@ -19,9 +19,11 @@ macro_1 = fa sol la
 track "main":
 
 
-piano : do+.4:4 re-.4:/4 | > :4 !3/4 mi
+piano : do+.4:4 re-.4:/4 | > :4 ^120 mi
 
 piano "not piano" : [
+
+    !4/3
 
     +do
 

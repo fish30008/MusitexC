@@ -19,6 +19,7 @@ class TokenType:
     PLUS = "PLUS"
     GREATER_THAN = "GREATER_THAN"
     LESS_THAN = "LESS_THAN"
+    CARROT = "CARROT"
     ASTERISK = "ASTERISK"
     SEMICOLON = "SEMICOLON"
     SPACE = "SPACE"
@@ -255,6 +256,8 @@ class Tokenizer:
             token_type = TokenType.GREATER_THAN
         elif char == '<':
             token_type = TokenType.LESS_THAN
+        elif char == '^':
+            token_type = TokenType.CARROT
         elif char == '*':
             token_type = TokenType.ASTERISK
         elif char == ';':
@@ -266,7 +269,7 @@ class Tokenizer:
         self.advance()
 
     def is_delimiter(self, char):
-        return char in "{}()[]:\",/='.-><*;+|!"
+        return char in "{}()[]:\",/='.-><*;+|!^"
 
     def get_keyword_type(self, word):
         keywords = {

@@ -263,7 +263,7 @@ class Parser:
                 expression = SetTone(1,note,source)
             else:
                 raise SyntaxError(f"Expected note literal after plus{self.log_tk()}")
-
+        
         elif self.match(TokenType.DASH):
             source = self.advance()
             if self.peek(0).type in NOTES:
@@ -299,21 +299,35 @@ class Parser:
             else:
                 raise SyntaxError(f"After colon expression expected number",self.log_tk())
 
-        # Parse SetTempo
+        # Parse SetMeasure
         elif self.match(TokenType.BANG):
             source = self.advance()
 
             if self.match(TokenType.NUM):
                 x = int(self.advance().value)
-                over = None
-                if self.expect(TokenType.SLASH) is not None:
-                    if self.match(TokenType.NUM):
-                        over = int(self.advance().value)
-                    else:
-                        raise SyntaxError(f"Expected number after slash",self.log_tk())
 
-                tempo = Fraction(x,over) if over is not None else x
+                if self.expect(TokenType.SLASH) is None:
+                    raise SyntaxError(f"Measures are defined as number/number, after number got {self.peek(-1)} instead")
+
+                if self.match(TokenType.NUM):
+                    over = int(self.advance().value)
+                else:
+                    raise SyntaxError(f"Expected number after defining measure",self.log_tk())
+
+                expression = SetMeasure(x,over,source)
+
+
+        # Parse SetTempo
+        elif self.match(TokenType.CARROT):
+            source = self.advance()
+
+            if self.match(TokenType.NUM):
+                x = int(self.advance().value)
+
+                tempo = x
                 expression =SetTempo(tempo,source)
+            else:
+                raise SyntaxError(f"Expected number after '^'",self.log_tk())
 
         # Parse Bar
         elif self.match(TokenType.PIPE):

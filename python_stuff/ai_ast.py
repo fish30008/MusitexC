@@ -185,6 +185,17 @@ class SetInterval(ASTNode):
     def __str__(self):
         return f"set(Interval={self.time})"
 
+class SetMeasure(ASTNode):
+    def __init__(self,x,over,source):
+        super().__init__(source)
+        self.x = x
+        self.over = over
+    
+    def __str__(self):
+        return f"set(Measure={self.x}/{self.over})"
+
+
+
 class temp(ASTNode):
     def __init__(self,source):
         super().__init__(source)
@@ -269,7 +280,8 @@ def traverse_ast(node, indent):
           isinstance(node, Note) or
           isinstance(node, Bar) or
           isinstance(node, Ident) or
-          isinstance(node, ReleaseNote) 
+          isinstance(node, ReleaseNote) or
+          isinstance(node, SetMeasure)
          ):
 
         return f"{prefix}{node}"

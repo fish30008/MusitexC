@@ -34,7 +34,7 @@ piano "not piano" : [
     <4 macro
 ]
 
-violin "wow" : macro | macro2(do,re)*5
+violin "wow" : macro2(do,re)*2
 
 """
 
@@ -54,10 +54,17 @@ print("printing ast, before resolving macros")
 print(traverse_ast(ast, 0))
 print(ast.ident_dic)
 
+print("printing ast, after resolving repeats")
+resolve_repeats(ast)
+print(traverse_ast(ast,0))
+
+print("printing ast, after flattening expr groups")
+flatten_expr_group(ast)
+print(traverse_ast(ast,0))
 
 print()
 resolve_macros(ast)
-# print("printing ast after resolving macros")
-# print(traverse_ast(ast,0))
+print("printing ast after resolving macros")
+print(traverse_ast(ast,0))
 
 

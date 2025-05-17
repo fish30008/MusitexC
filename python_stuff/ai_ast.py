@@ -14,11 +14,12 @@ class ASTNode:
 
 
 class Program(ASTNode):
-    def __init__(self, metadata, macros, tracks, source):
+    def __init__(self, metadata, macros, tracks, source,idents):
         super().__init__(source)
         self.metadata = metadata
         self.macros = macros
         self.tracks = tracks
+        self.ident_dic = idents
 
     def __str__(self):
         return f"Program(metadata={self.metadata}, macros={self.macros},tracks={self.tracks})"

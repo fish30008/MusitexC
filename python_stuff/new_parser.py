@@ -19,6 +19,7 @@ class Parser:
         self.tracks = []
         self.macros = []
         self.metadata = []
+        self.idents = {}
 
     def advance(self):
         self.pos += 1
@@ -80,12 +81,22 @@ class Parser:
             # Handle macro definition or movement
             elif self.peek(0).type == TokenType.ALPHANUM:
                 ident = self.advance()
+                
+
                 self.skip_space()
                 # parse macros
                 if self.peek(0).type in [TokenType.EQUAL,TokenType.OPEN_PAREN]:
+                    
+                    # if it's a macro, it needs to be added to ident list
+                    if ident.value in self.idents.keys():
+                        raise SyntaxError(f"Identifier {ident.value} is already used here:{self.idents[ident.value]}, redefinitions are not allowed")
+                    self.idents[ident.value] = ident
+
                     self.stack.append(ParseState.MACRO)
                     macro = self.parse_macro(ident)
                     self.macros.append(macro)
+                    
+                    self.idents[ident.value] = len(self.macros)
 
                     top = self.stack.pop()
                     if top != ParseState.MACRO:
@@ -97,6 +108,14 @@ class Parser:
                     movement = self.parse_movement(ident)
                     # append to the last defined track
                     self.tracks[-1].movements.append(movement)
+
+                    # add the identifier for the movement to the list
+                    m_ident = f"{movement.instrument.value}{movement.tag if movement.tag == "" else movement.tag.value}"
+                    if (m_ident not in self.idents.keys()  # if the movement isn't defined already
+                        or self.idents[m_ident][0] != len(self.tracks) # or if defined, doesn't belong to the same track
+                    ):
+                        self.idents[m_ident] = (len(self.tracks), len(self.tracks[-1].movements))
+
 
                     top = self.stack.pop()
                     if top != ParseState.MOVEMENT:
@@ -130,7 +149,7 @@ class Parser:
                 raise SyntaxError(
                     f"Parse error: Unexpected token {self.peek(0)} at line {self.peek(0).line}, column {self.peek(0).column}")
 
-        return Program(self.metadata,self.macros,self.tracks, self.tokens[self.pos])
+        return Program(self.metadata,self.macros,self.tracks, self.tokens[self.pos],self.idents)
 
     def parse_movement(self,instr):
         
@@ -139,6 +158,8 @@ class Parser:
 
         if self.match(TokenType.STRING):
             tag = self.advance()
+
+
             self.skip_space()
 
         if self.expect(TokenType.COLON) is None:
@@ -167,7 +188,10 @@ class Parser:
 
                 # got some parameters
                 elif self.match(TokenType.ALPHANUM):
-                    parameters.append(self.advance()) 
+                    param = self.advance()
+                    parameters.append(param) 
+                    self.idents[param.value] = param
+
                     self.skip_space()
 
                     # Parse additional parameters separated by commas
@@ -350,6 +374,10 @@ class Parser:
         # Parse ident or chord
         elif self.match(TokenType.ALPHANUM):
             ident = self.advance()
+
+            if ident.value not in self.idents.keys():
+                self.idents[ident.value] = ident
+
             if self.match(TokenType.SLASH):
                 # parsing chord
                 self.advance()

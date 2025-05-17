@@ -1,6 +1,6 @@
 from lexer import *
 from new_parser import *
-from rez_macros import *
+from simplify import *
 
 print("start program")
 

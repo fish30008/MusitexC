@@ -5,46 +5,71 @@ import copy
 
 
 def flatten_expr_group(program):
-    for m_id,macro in enumerate(program.macros):
-        for e_id,expr in enumerate(macro.body):
-            if isinstance(expr, ExprGroup):
-                macro.body = macro.body[:e_id] + expr.exprs + macro.body[e_id+1:]
+    while True:
+        modified = False
+        for m_id,macro in enumerate(program.macros):
+            for e_id,expr in enumerate(macro.body):
+                if isinstance(expr, ExprGroup):
+                    macro.body = macro.body[:e_id] + expr.exprs + macro.body[e_id+1:]
+                    modified = True
+                    break 
 
-    # resolve repeats in movements
-    for t_id,track in enumerate(program.tracks):
-        for m_id,mov in enumerate(track.movements):
-            for e_id,expr in enumerate(mov.expressions):
-                if isinstance(expr,ExprGroup):
-                    mov.expressions = mov.expressions[:e_id-1] + expr.exprs + mov.expressions[e_id+1:]
+        # resolve repeats in movements
+        for t_id,track in enumerate(program.tracks):
+            for m_id,mov in enumerate(track.movements):
+                for e_id,expr in enumerate(mov.expressions):
+                    if isinstance(expr,ExprGroup):
+                        mov.expressions = mov.expressions[:e_id] + expr.exprs + mov.expressions[e_id+1:]
+                        modified = True
+                        break
+
+        if not modified:
+            break
     
+def print_list(list,indent):
+    for item in list:
+        print(traverse_ast(item,indent))
+    print()
 
 def resolve_repeats(program):
-    # resolve repeats in macros
-    for m_id,macro in enumerate(program.macros):
-        for e_id,expr in enumerate(macro.body):
-            if isinstance(expr, Repetition):
-                if e_id == 0:
-                    raise SyntaxError(f"Repetition must fallow an expression {expr}")
+    # Process macros
+    for macro in program.macros:
+        macro.body = resolve_in_list(macro.body)
 
+    # Process tracks
+    for track in program.tracks:
+        for movement in track.movements:
+            movement.expressions = resolve_in_list(movement.expressions)
 
-                last_expr = macro.body[e_id-1]
-                macro.body = macro.body[:e_id-1] + [last_expr]*(expr.times) + macro.body[e_id+1:]
-
-    # resolve repeats in movements
-    for t_id,track in enumerate(program.tracks):
-        for m_id,mov in enumerate(track.movements):
-            for e_id,expr in enumerate(mov.expressions):
-                if isinstance(expr,Repetition):
-                    if e_id == 0 :
-                        raise SyntaxError(f"Repetition must fallow an expression {expr}")
-
-                    last_expr = mov.expressions[e_id-1]
-                    mov.expressions = mov.expressions[:e_id-1] + [last_expr]*expr.times + mov.expressions[e_id+1:]
-
-
-
-    pass
-
+def resolve_in_list(expr_list):
+    new_exprs = []
+    i = 0
+    while i < len(expr_list):
+        expr = expr_list[i]
+        
+        if isinstance(expr, ExprGroup):
+            # Recursively process nested groups
+            expr.exprs = resolve_in_list(expr.exprs)
+            new_exprs.append(expr)
+            i += 1
+        elif isinstance(expr, Repetition):
+            # Ensure repetition follows an expression
+            if not new_exprs:
+                raise SyntaxError(f"Invalid repetition at start of expression list: {expr}")
+                
+            # Get target expression and repeat count
+            target = new_exprs.pop()
+            count = expr.times
+            
+            expanded = [copy.deepcopy(target) for _ in range(count)]
+                
+            new_exprs.extend(expanded)
+            i += 1
+        else:
+            new_exprs.append(expr)
+            i += 1
+            
+    return new_exprs
 def resolve_macros(program):
     
     # iterate through movements in the ast and find macros
@@ -105,7 +130,6 @@ def apply_macro(macro,args,program):
 
 
 
-    print(f"\nmacro after applying param:{traverse_ast(new_macro,2)}\n")
     return new_macro
 
 def inline_macro_body(macro,program):
@@ -137,5 +161,4 @@ def inline_macro_body(macro,program):
             another_macro = apply_macro(macro,program)
             macro_body = macro.body[:e_id] + inline_macro_body(another_macro,program) + macro.body[e_id+1:]
 
-    print(f"macro body to be inlined:{macro_body}")
     return macro_body

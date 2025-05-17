@@ -1,7 +1,7 @@
 from ai_ast import *
 
 NOTES = [TokenType.do,TokenType.re,TokenType.mi,TokenType.fa,TokenType.sol,TokenType.la,TokenType.si, TokenType.KW_R]
-END_STATEMENT = [TokenType.NL, TokenType.SEMICOLON]
+END_STATEMENT = [TokenType.NL, TokenType.SEMICOLON, TokenType.EOF]
 
 class ParseState:
 
@@ -109,6 +109,9 @@ class Parser:
                     movement = self.parse_movement(ident)
                     # append to the last defined track
                     self.tracks[-1].movements.append(movement)
+                    self.skip_whitespace()
+                    self.skip_space()
+
 
                     # add the identifier for the movement to the list
                     m_ident = f"{movement.instrument.value}{movement.tag if movement.tag == "" else movement.tag.value}"
@@ -148,7 +151,7 @@ class Parser:
             # Handle unexpected tokens 
             else:
                 raise SyntaxError(
-                    f"Parse error: Unexpected token {self.peek(0)} at line {self.peek(0).line}, column {self.peek(0).column}")
+                    f"Unexpected token {self.peek(0)} at line {self.peek(0).line}, column {self.peek(0).column}")
 
         return Program(self.metadata,self.macros,self.tracks, self.tokens[self.pos],self.idents)
 
@@ -164,7 +167,7 @@ class Parser:
             self.skip_space()
 
         if self.expect(TokenType.COLON) is None:
-            raise SyntaxError(f"Expected colon after movement {instr}",self.log_tk())
+            raise SyntaxError(f"Expected colon after movement {instr}{self.log_tk()}")
 
         while self.peek(0).type not in END_STATEMENT:
             self.skip_space()
@@ -295,9 +298,16 @@ class Parser:
             source = self.advance()
             
             if self.match(TokenType.NUM):
-                expression = SetDuration(int(self.advance().value),source)
+                x = self.advance()
+                over = None
+                if self.expect(TokenType.SLASH):
+                    over = self.expect(TokenType.NUM)
+                
+                duration = int(x.value) if over is None else Fraction(int(x.value),int(over.value))
+
+                expression = SetDuration(duration,source)
             else:
-                raise SyntaxError(f"After colon expression expected number",self.log_tk())
+                raise SyntaxError(f"After colon expression expected number{self.log_tk()}")
 
         # Parse SetMeasure
         elif self.match(TokenType.BANG):
@@ -365,7 +375,7 @@ class Parser:
             if isinstance(note,Note) or isinstance(note,Chord) or isinstance(note,Ident):
                 expression =HoldNote(note,source)
             else:
-                raise SyntaxError(f"Expected note or identifier after open parenthesis",self.log_tk())
+                raise SyntaxError(f"Expected note or identifier after open parenthesis{self.log_tk()}")
 
         # Parse ExprGroup
         elif self.match(TokenType.OPEN_BRACKET):
@@ -512,6 +522,8 @@ class Parser:
                         raise SyntaxError(f"After colon in note definition expected a number",self.log_tk())
             
             expression =Note(note_p,semitone,octave,duration)
+        elif self.match(TokenType.EOF):
+            pass
 
         else:
             raise SyntaxError(f"Unexpected token while parsing expressions: {self.peek(0)}")

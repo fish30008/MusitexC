@@ -146,7 +146,9 @@ class Tokenizer:
     def tokenize_comment(self):
         self.advance()
 
-        while self.peek() is not None and self.peek() in '\n\r':
+        while True:
+            if self.peek() in '\r\n':
+                return
             self.advance()
 
 

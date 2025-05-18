@@ -258,6 +258,15 @@ class Parser:
 
 # simple expressions
 
+        # Parse SetVolume
+        elif self.match(TokenType.V):
+            source = self.advance()
+            if self.expect(TokenType.EQUAL) is None:
+                raise SyntaxError(f"Expected colon after keyword {source.value}{self.log_tk()}")
+            if self.match(TokenType.NUM):
+                expression = SetVolume(int(self.advance().value),source)
+            else:
+                raise SyntaxError(f"Expected note literal after plus{self.log_tk()}")
         # Parse SetTone
         elif self.match(TokenType.PLUS):
             source = self.advance()
@@ -459,7 +468,7 @@ class Parser:
             # parse notes
             note_p = self.advance()
 
-            semitone = 0
+            semitone = 999 # placeholder for default value
             octave = -1 # placeholder for default value
             duration = -1 # placeholder for default value
             # parse semitones 

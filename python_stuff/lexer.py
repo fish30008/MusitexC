@@ -35,6 +35,7 @@ class TokenType:
     KW_TITLE = "KW_TITLE"
     KW_CR = "KW_CR"
     KW_R = "KW_R"
+    V = "V" # volume
 
     EOF = "EOF"
 
@@ -286,5 +287,8 @@ class Tokenizer:
             "sol":TokenType.sol ,
             "la":TokenType.la ,
             "si":TokenType.si ,
+            "vol":TokenType.V,
+            "v":TokenType.V,
+            "volume":TokenType.V,
         }
         return keywords.get(word)

@@ -8,8 +8,8 @@ verse1 = [
 track "main":
     piano "melody": [
         !4/4
-        ^120
-        > :1/4  # Quarter note duration
+        > 
+	:1/4  # Quarter note duration
         
         # Verse 1 
         verse1
@@ -22,8 +22,10 @@ track "main":
     ]
 
     violin "harmony": [
+    	v=50
+
         !4/4
-        <2 :1  # Whole note duration (lower octave)
+        <1 :1  # Whole note duration (lower octave)
         
         [ do/mi/sol | sol/si/re | fa/la/do | mi/sol/si | ]*2
 ]

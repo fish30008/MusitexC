@@ -68,6 +68,8 @@ class Movement(ASTNode):
 
 ### Expressions
 
+
+
 class Ident(ASTNode):
     def __init__(self,source):
         super().__init__(source)
@@ -195,6 +197,13 @@ class SetMeasure(ASTNode):
         return f"set(Measure={self.x}/{self.over})"
 
 
+class SetVolume(ASTNode):
+    def __init__(self,vol,source):
+        super().__init__(source)
+        self.vol = vol
+    
+    def __str__(self):
+        return f"set(Volume={self.vol})"
 
 class temp(ASTNode):
     def __init__(self,source):
@@ -281,7 +290,8 @@ def traverse_ast(node, indent):
           isinstance(node, Bar) or
           isinstance(node, Ident) or
           isinstance(node, ReleaseNote) or
-          isinstance(node, SetMeasure)
+          isinstance(node, SetMeasure) or
+          isinstance(node, SetVolume)
          ):
 
         return f"{prefix}{node}"

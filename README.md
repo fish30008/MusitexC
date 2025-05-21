@@ -7,8 +7,10 @@ This application parses a custom syntax file and converts it into a MIDI file.
 Before running this code, ensure you have the following dependencies installed:
 
 - Python 3.x
-- Required Python modules (you may need to install these using pip)
-
+- Required Python modules (you may need to install these using pip):
+```bash
+pip install midiutil
+```
 ## Project Structure
 
 The code consists of several modules:

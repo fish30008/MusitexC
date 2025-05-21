@@ -25,7 +25,7 @@ The code consists of several modules:
 To run the code, use the following command:
 
 ```bash
-python main.py <input_file> [output_file]
+python compiler.py <input_file> [output_file]
 ```
 
 Where:
@@ -37,7 +37,7 @@ If no output file is specified, the program will generate one based on the input
 ### Example
 
 ```bash
-python main.py ./examples/twinkle.mtex
+python compiler.py ./examples/twinkle.mtex
 ```
 
 This will read `./examples/twinkle.mtex` and produce `twinkle.midi`.
@@ -45,7 +45,7 @@ This will read `./examples/twinkle.mtex` and produce `twinkle.midi`.
 Or, with a custom output filename:
 
 ```bash
-python main.py ./examples/twinkle.mtex my_output.midi
+python compiler.py ./examples/twinkle.mtex my_output.midi
 ```
 
 ## Input File Format
@@ -63,7 +63,7 @@ The input file should use the custom syntax that can be parsed by the system. Th
 3. Several simplification passes are applied to the AST:
    - `resolve_repeats`: Handles repeat structures
    - `flatten_expr_group`: Flattens grouped expressions
-   - `resolve_macros`: Processes macro definitions
+   - `resolve_macros`: Inlines macro calls
 4. Finally, the AST is converted into a MIDI file using `gen_midi()`.
 
 

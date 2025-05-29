@@ -53,9 +53,6 @@ def gen_mono_track(track,meta,output):
 
         for e_id,event in enumerate(movement.expressions):
             if isinstance(event, Note):
-                # handle note event
-                # print(f"	found note {event}")
-                
                 volume = state.volume
 
                 if event.value.value.lower() == 'r':
@@ -84,14 +81,14 @@ def gen_mono_track(track,meta,output):
 
 
                 pass
-            elif isinstance(event,SetVolume):
-                state.volume = event.vol
 
             elif isinstance(event,SetMeasure):
                 pass
                 # print(f"	found measure{event}")
                 # print()
             
+            elif isinstance(event,SetVolume):
+                state.volume = event.vol
             elif isinstance(event,SetTempo):
                 state.tempo = event.n
 

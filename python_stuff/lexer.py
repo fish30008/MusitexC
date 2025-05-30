@@ -74,6 +74,8 @@ class Tokenizer:
         while self.pos < len(self.source) -1:
             self.tokenize_next()
 
+        # Add extra newline token for parsing reasons
+        self.tokens.append(Token("ln",self.line,self.column,TokenType.NL))
         # Add EOF token
         self.tokens.append(Token("eof", self.line, self.column, TokenType.EOF))
         return self.tokens

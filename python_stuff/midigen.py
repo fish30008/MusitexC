@@ -1,5 +1,5 @@
 from new_parser import *
-from ai_ast import *
+from ast import *
 from midiutil import MIDIFile
 
 class gen_state:
@@ -32,13 +32,16 @@ def gen_midi(ast,output):
     # print("generating midi:")
     if len(ast.tracks) == 1:
         # print("for only one track")
-        gen_mono_track(ast.tracks[0],ast.metadata,output)
+        gen_mono_track(ast,output)
     else:
         gen_multi_track(ast.tracks,ast.metadata)
     pass
 
 
-def gen_mono_track(track,meta,output):
+def gen_mono_track(ast,output):
+    track = ast.tracks[0]
+    meta = ast.metadata
+
     midi = MIDIFile(1,True,True,False,1) # default values for 1 track
     midi.addTempo(0,0,120) #default values
 
@@ -46,7 +49,12 @@ def gen_mono_track(track,meta,output):
 
     for m_id,movement in enumerate(track.movements):
         
-        program = midi_instruments[movement.instrument.value]
+        if movement.instrument.value in midi_instruments.keys():
+            program = midi_instruments[movement.instrument.value]
+        else:
+            ast.err_list.append(f"""Compilation error: instrument \"{movement.instrument.value}\" is not supported
+Tip: You can choose instruments like piano,guitar etc.
+Tip: All the midi instruments are supported""")
         midi.addProgramChange(0,m_id,0,program)
         
         state = gen_state()

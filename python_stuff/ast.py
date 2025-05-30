@@ -14,12 +14,13 @@ class ASTNode:
 
 
 class Program(ASTNode):
-    def __init__(self, metadata, macros, tracks, source,idents):
+    def __init__(self, metadata, macros, tracks, source,idents,error_list):
         super().__init__(source)
         self.metadata = metadata
         self.macros = macros
         self.tracks = tracks
         self.ident_dic = idents
+        self.err_list = error_list
 
     def __str__(self):
         return f"Program(metadata={self.metadata}, macros={self.macros},tracks={self.tracks})"
@@ -223,8 +224,9 @@ class ExprGroup(ASTNode):
 
 ### errors
 
-# class errExpr(ASTNode):
-#
+class errExpr(ASTNode):
+    def __init__(self,source):
+        super().__init__(source)
 
 
 

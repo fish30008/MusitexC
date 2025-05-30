@@ -1,5 +1,5 @@
 from new_parser import Parser
-from ai_ast import *
+from ast import *
 from lexer import *
 import copy
 

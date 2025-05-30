@@ -1,4 +1,4 @@
-from ai_ast import *
+from ast import *
 
 NOTES = [TokenType.do,TokenType.re,TokenType.mi,TokenType.fa,TokenType.sol,TokenType.la,TokenType.si, TokenType.KW_R]
 END_STATEMENT = [TokenType.NL, TokenType.SEMICOLON, TokenType.EOF]
@@ -20,6 +20,7 @@ class Parser:
         self.macros = []
         self.metadata = []
         self.idents = {}
+        self.err_list = []
 
     def advance(self):
         self.pos += 1
@@ -60,13 +61,33 @@ class Parser:
         
         # Continue parsing until we reach EOF
         while self.peek(0).type != TokenType.EOF:
+
+            # Handle expected error cases:
+            if self.peek(0).type in NOTES:
+                self.err_list.append(f"""{SyntaxErr(self.peek(0))}Statements cannot start with a note literal.
+
+Tip: To write notes or expressions over multiple lines use an exression group by enclosing them in []
+
+Example:
+X piano: 
+        do re mi
+
+V piano: [
+        do re mi
+]
+                """)
+                self.restore_stmt()
+                continue
+
+
             # Handle metadata
             if self.peek(0).type == TokenType.KW_TITLE:
                 self.advance() # consume title token
                 self.skip_space()
 
                 if self.expect(TokenType.COLON) is None:
-                    raise SyntaxError(f"Expected colon after keyword title, got token {self.peek(0)}")
+                    self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected colon after keyword title, got token \"{self.peek(0).value}\" intead\n" )
+                    self.restore_stmt()
                 else:
                     self.skip_space()
                     name = self.expect(TokenType.STRING)
@@ -75,7 +96,8 @@ class Parser:
                         self.metadata.append(Metadata(name.value,name))
 
                     else:
-                        raise SyntaxError(f"Expected string after title definiton, got token {name} instead")
+                        self.err_list.append(f"{SyntaxErr(name)}Expected string after title definiton, got token \"{name.value}\" instead\n")
+                        self.restore_stmt()
 
 
             # Handle macro definition or movement
@@ -90,7 +112,7 @@ class Parser:
                     # if it's a macro, it needs to be added to ident list
                     if ident.value in self.idents.keys():
                         if not isinstance(self.idents[ident.value],Token) :
-                            raise SyntaxError(f"Identifier {ident.value} is already used here:{self.idents[ident.value]}, redefinitions are not allowed")
+                            self.err_list.append(f"{Ident_err(ident)}Identifier {ident.value} is already used here:{self.idents[ident.value]}, redefinitions are not allowed")
                     self.idents[ident.value] = ident
 
                     self.stack.append(ParseState.MACRO)
@@ -101,7 +123,7 @@ class Parser:
 
                     top = self.stack.pop()
                     if top != ParseState.MACRO:
-                        raise ValueError(f"Expected Macro state on top of the stack, got {top} intead")
+                        self.err_list.append(f"Compiler error: Expected Macro state on top of the stack, got {top} intead")
 
                 # parse movements
                 elif self.peek(0).type in [TokenType.STRING , TokenType.COLON]:
@@ -123,10 +145,11 @@ class Parser:
 
                     top = self.stack.pop()
                     if top != ParseState.MOVEMENT:
-                        raise ValueError(f"Expected Movement state on top of the stack, got {top} intead")
+                        self.err_list.append(f"Compiler error: Expected Movement state on top of the stack, got {top} intead")
 
                 else:
-                    raise SyntaxError(f"Unexpected token after alphanum: {self.peek(0)}")
+                    self.err_list.append(f"{SyntaxErr(self.peek(0))}Unexpected token after alphanum: {self.peek(0)}")
+                    self.restore_stmt()
 
             elif self.peek(0).type == TokenType.KW_TRACK:
                 source = self.advance()
@@ -142,7 +165,8 @@ class Parser:
                     self.skip_whitespace()
 
                 else :
-                    raise SyntaxError(f"Syntax error: Expected colon or string after \"track\" , got token {self.peek(1)} instead")
+                    self.err_list.append(f"{SyntaxErr(self.peek(1))} Expected colon or string after \"track\" , got token \"{self.peek(1).value}\" instead")
+                    self.restore_to(TokenType.NL)
 
 
             # Skip newlines between statements
@@ -150,10 +174,11 @@ class Parser:
                 self.advance()
             # Handle unexpected tokens 
             else:
-                raise SyntaxError(
-                    f"Unexpected token {self.peek(0)} at line {self.peek(0).line}, column {self.peek(0).column}")
+                self.err_list.append(
+                    f"{SyntaxErr(self.peek(0))}Unexpected token \"{self.peek(0)}\" \n")
+                self.restore_stmt()
 
-        return Program(self.metadata,self.macros,self.tracks, self.tokens[self.pos],self.idents)
+        return Program(self.metadata,self.macros,self.tracks, self.tokens[self.pos],self.idents,self.err_list)
 
     def parse_movement(self,instr):
         
@@ -167,7 +192,7 @@ class Parser:
             self.skip_space()
 
         if self.expect(TokenType.COLON) is None:
-            raise SyntaxError(f"Expected colon after movement {instr}{self.log_tk()}")
+            self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected colon after movement {instr} {self.log_tk()}")
 
         while self.peek(0).type not in END_STATEMENT:
             self.skip_space()
@@ -207,25 +232,31 @@ class Parser:
                             continue
 
                         elif self.peek(0).type == TokenType.CLOSE_PAREN:
-                            raise SyntaxError(f"Trailing comma in macro definition arguments: {self.peek(0)}")
+                            self.err_list.append(f"{SyntaxErr(self.peek(0))}Trailing comma in macro definition arguments: \"{self.peek(0).value}\"")
+                            # restoer by skipping it
+                            self.advance()
                         else:
-                            raise SyntaxError(
-                                f"Expected parameter name, got {self.peek(0).type} at line {self.peek(0).line}, column {self.peek(0).column}")
+                            self.err_list.append(
+                                f"{SyntaxErr(self.peek(0))}Expected parameter name, got \"{self.peek(0).value}\" instead")
+                            # restore by skipping
+                            self.advance()
                     # if no comma, has to be close paren
                     elif self.match(TokenType.CLOSE_PAREN):
                         self.advance()
                         break
                     else:
-                        raise SyntaxError(f"Macro parameter must be fallowed by comma or closed parenthesi, got toke {self.peek(0)} instead")
+                        self.err_list.append(f"{SyntaxErr(self.peek(0))}Macro parameter must be fallowed by comma or closed parenthesi, got token \"{self.peek(0).value}\" instead")
+                        self.restore_to(TokenType.NL,TokenType.CLOSE_PAREN)
                 else:
-                    raise SyntaxError(f"Expected identifier in arguments body, got token {self.peek(0) } instead")
+                    self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected identifier in arguments body, got token \"{self.peek(0).value}\" instead")
 
         # end of parsing parameters
 
         self.skip_space()
             
         if not self.match(TokenType.EQUAL):
-            raise SyntaxError(f"Expected equals sign after macro name or arguments",self.log_tk())
+            self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected equals sign after macro name or arguments",self.log_tk())
+            self.restore_stmt()
 
         self.advance() # skip equal token
         self.skip_space
@@ -262,11 +293,13 @@ class Parser:
         elif self.match(TokenType.V):
             source = self.advance()
             if self.expect(TokenType.EQUAL) is None:
-                raise SyntaxError(f"Expected colon after keyword {source.value}{self.log_tk()}")
+                self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected colon after keyword {source.value}{self.log_tk()}")
+                self.restore_to(TokenType.SPACE)
             if self.match(TokenType.NUM):
                 expression = SetVolume(int(self.advance().value),source)
             else:
-                raise SyntaxError(f"Expected note literal after plus{self.log_tk()}")
+                self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected note literal after plus{self.log_tk()}")
+                self.restore_to(TokenType.SPACE)
         # Parse SetTone
         elif self.match(TokenType.PLUS):
             source = self.advance()
@@ -274,7 +307,7 @@ class Parser:
                 note = self.advance()
                 expression = SetTone(1,note,source)
             else:
-                raise SyntaxError(f"Expected note literal after plus{self.log_tk()}")
+                self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected note literal after plus{self.log_tk()}")
         
         elif self.match(TokenType.DASH):
             source = self.advance()
@@ -282,7 +315,7 @@ class Parser:
                 note = self.advance()
                 expression = SetTone(-1,note,source)
             else:
-                raise SyntaxError(f"Expected note literal after dash{self.log_tk}")
+                self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected note literal after dash{self.log_tk}")
 
         # Parse SetOctave
         elif self.match(TokenType.GREATER_THAN):
@@ -316,7 +349,7 @@ class Parser:
 
                 expression = SetDuration(duration,source)
             else:
-                raise SyntaxError(f"After colon expression expected number{self.log_tk()}")
+                self.err_list.append(f"{SyntaxErr(self.peek(0))}After colon expression expected number{self.log_tk()}")
 
         # Parse SetMeasure
         elif self.match(TokenType.BANG):
@@ -326,14 +359,19 @@ class Parser:
                 x = int(self.advance().value)
 
                 if self.expect(TokenType.SLASH) is None:
-                    raise SyntaxError(f"Measures are defined as number/number, after number got {self.peek(-1)} instead")
+                    self.err_list.append(f"{SyntaxErr(self.peek(-1))}Measures are defined as number/number, after number got {self.peek(-1)} instead of \"/\"  ")
+                    self.restore_to(TokenType.SPACE)
 
                 if self.match(TokenType.NUM):
                     over = int(self.advance().value)
                 else:
-                    raise SyntaxError(f"Expected number after defining measure",self.log_tk())
+                    self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected number after defining measure{self.log_tk()}")
+                    self.restore_to(TokenType.SPACE)
 
                 expression = SetMeasure(x,over,source)
+            else:
+                self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected a number after \"!\"{self.log_tk()} ")
+                self.restore_to(TokenType.SPACE)
 
 
         # Parse SetTempo
@@ -346,7 +384,8 @@ class Parser:
                 tempo = x
                 expression =SetTempo(tempo,source)
             else:
-                raise SyntaxError(f"Expected number after '^'",self.log_tk())
+                self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected number after '^'",self.log_tk())
+                self.restore_to(TokenType.SPACE)
 
         # Parse Bar
         elif self.match(TokenType.PIPE):
@@ -367,14 +406,15 @@ class Parser:
             if self.stack[-1] == ParseState.EXPR:
                 expression = Repetition(n,source)
             else:
-                raiseSyntaxError("Repetition postfix operator can only be used after an expression",self.log_tk())
+                self.err_list.append(f"{SyntaxErr(self.peek(0))}Repetition postfix operator can only be used after an expression{self.log_tk()}")
+
         # Parse ReleaseNote
         elif self.match(TokenType.CLOSE_PAREN):
             source = self.advance()
             if self.stack[-1] == ParseState.EXPR:
                 expression = ReleaseNote(source)
             else:
-                raise SyntaxError("Close paren postfix operator can only be used after an expression",self.log_tk())
+                self.err_list.append(f"{SyntaxErr(self.peek(0))}Close paren postfix operator can only be used after an expression{self.log_tk()}")
 
         # Parse HoldNote
         elif self.match(TokenType.OPEN_PAREN):
@@ -384,7 +424,8 @@ class Parser:
             if isinstance(note,Note) or isinstance(note,Chord) or isinstance(note,Ident):
                 expression =HoldNote(note,source)
             else:
-                raise SyntaxError(f"Expected note or identifier after open parenthesis{self.log_tk()}")
+                self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected note or identifier after open parenthesis{self.log_tk()}")
+                self.retore_to_space()
 
         # Parse ExprGroup
         elif self.match(TokenType.OPEN_BRACKET):
@@ -435,7 +476,8 @@ class Parser:
                         return Chord(notes,ident)
 
 
-                    raise SyntaxError(f"Chords can only be formed from notes,using {ident} is not valid")
+                    self.err_list.append(f"{SyntaxErr(self.peek(0))}Chords can only be formed from notes,using \"{ident.value}\" is not valid")
+                    self.restore_to(TokenType.SPACE)
             
             # parse Macro appl
             elif self.match(TokenType.OPEN_PAREN):
@@ -453,15 +495,24 @@ class Parser:
                     if self.expect(TokenType.COMMA):
                         continue
                     else:
-                        raise SyntaxError(f"Expected comma or close parenthesis after expression in argument list",self.log_tk())
+                        self.err_list.append(f"{SyntaxErr(self.peek(0))}Expected comma or close parenthesis after expression in argument list",self.log_tk())
+                        self.restore_to(TokenType.CLOSE_PAREN)
 
-                self.stack.pop()
-
+                self.stack.pop() # preserve parse stack state
                 return MacroCall(ident,args)
+            elif self.match(TokenType.SPACE):
+                pass
+            elif self.match(TokenType.NL):
+                pass
+            elif self.match(TokenType.CLOSE_PAREN):
+                pass
+            else :
+                self.err_list.append(f"{SyntaxErr(self.peek(0))}Unexpected token after identifier{self.peek(0).value}")
+                self.restore_to(TokenType.SPACE)
 
-
-
+            # if it doesn't match anything else, it's just an identifier
             expression =Ident(ident)
+
         
         # Parse Note or chord
         elif self.peek(0).type in NOTES:
@@ -511,7 +562,7 @@ class Parser:
                         return Chord(notes,note_p)
 
                     else:
-                        raise SyntaxError(f"Chords can only be formed from notes,using {note} is not valid, notes= {notes}, curr{self.peek(0)}")
+                        self.err_list.append(f"{SyntaxErr(self.peek(0))}Chords can only be formed from notes,using {note} is not valid, notes= {notes}, curr{self.peek(0)}")
                         
 
             if self.match(TokenType.COLON):
@@ -525,17 +576,18 @@ class Parser:
                     if self.match(TokenType.NUM):
                         duration = Fraction(1,int(self.advance().value))
                     else:
-                        raise SyntaxError(f"After slash expected a number",self.log_tk())
+                        self.err_list.append(f"{SyntaxErr(self.peek(0))}After slash expected a number",self.log_tk())
+                        self.restore_to(TokenType.SPACE)
 
                 else :
-                        raise SyntaxError(f"After colon in note definition expected a number",self.log_tk())
+                    self.err_list.append(f"{SyntaxErr(self.peek(0))}After colon in note definition expected a number",self.log_tk())
             
             expression =Note(note_p,semitone,octave,duration)
         elif self.match(TokenType.EOF):
             pass
 
         else:
-            raise SyntaxError(f"Unexpected token while parsing expressions: {self.peek(0)}")
+            self.err_list.append(f"{SyntaxErr(self.peek(0))}Unexpected token while parsing expressions: {self.peek(0).value} ")
 
         top = self.stack.pop()
         if top != ParseState.EXPR:
@@ -562,4 +614,21 @@ class Parser:
             self.advance()
 
     def log_tk(self):
-        return f", got token {self.peek(0)} instead\nstack:{self.stack}"
+        return f", got token \"{self.peek(0).value}\" instead\n"
+
+# error recovery parser functions
+    def restore_stmt(self):
+        while self.peek(0).type != TokenType.NL and \
+                self.peek(0).type != TokenType.COLON and \
+                self.peek(0).type != TokenType.EOF :
+            self.advance()
+    def restore_to(self,*args):
+        while self.peek(0).type not in args.items():
+            self.advance()
+
+# helper err functions
+def SyntaxErr(token):
+    return f"Syntax Error({token.line},{token.column}):"
+
+def Ident_err(token):
+    return f"Identifier Error({token.line},{token.column}):"

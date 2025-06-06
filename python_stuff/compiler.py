@@ -27,12 +27,12 @@ def main():
 
     if count == 0:
         print("""Compilation error: All tracks cannot be empty.
-
-Tip: write the name of an instruments, ":" then the notes you want to play in the same line
-
-Example: 
-
-piano: do re mi fa sol la si do
+|
+| Tip: write the name of an instruments, ":" then the notes you want to play in the same line
+|
+| Example: 
+|
+| piano: do re mi fa sol la si do
 
 """)
         return

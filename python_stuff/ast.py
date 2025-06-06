@@ -228,6 +228,9 @@ class errExpr(ASTNode):
     def __init__(self,source):
         super().__init__(source)
 
+    def __str__(self):
+        return f"error({self.source})"
+
 
 
 
@@ -293,7 +296,8 @@ def traverse_ast(node, indent):
           isinstance(node, Ident) or
           isinstance(node, ReleaseNote) or
           isinstance(node, SetMeasure) or
-          isinstance(node, SetVolume)
+          isinstance(node, SetVolume) or
+          isinstance(node, errExpr)
          ):
 
         return f"{prefix}{node}"

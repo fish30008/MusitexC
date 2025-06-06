@@ -52,9 +52,12 @@ def gen_mono_track(ast,output):
         if movement.instrument.value in midi_instruments.keys():
             program = midi_instruments[movement.instrument.value]
         else:
-            ast.err_list.append(f"""Compilation error: instrument \"{movement.instrument.value}\" is not supported
-Tip: You can choose instruments like piano,guitar etc.
-Tip: All the midi instruments are supported""")
+            ast.err_list.append(f"""Compilation error({movement.instrument.line},{movement.instrument.column}): instrument \"{movement.instrument.value}\" is not supported
+| Tip: You can choose instruments like piano,guitar etc.
+| Tip: All the midi instruments are supported
+
+""")
+
         midi.addProgramChange(0,m_id,0,program)
         
         state = gen_state()
@@ -147,7 +150,8 @@ Tip: All the midi instruments are supported""")
                     midi.addNote(0,m_id,pitch,state.time,duration, volume)
 
                 state.time += duration
-                       
+            elif isinstance(event, errExpr):
+                pass
             else:
                 raise ValueError(f"	Unhandled event type in movement:{event}")
     

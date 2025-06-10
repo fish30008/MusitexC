@@ -1,6 +1,6 @@
 title: "Twinkle Twinkle Little Star"
 
-verse1(arg1) = [
+verse1 = [
         do do sol sol | la la sol r |
         fa fa mi mi | re re do r |
 ]
@@ -12,10 +12,13 @@ track "main":
 	:1/4  # Quarter note duration
 
         # Verse 1 
-        verse1(bruh)
+        verse1
 
         # Verse 2 
-        [ sol sol fa fa | mi mi re r |]*2
+
+			# the default space between notes is the 1 note
+        [ sol sol fa fa | mi 1 mi 1 re 2 |]*2
+				#      ^ a duration longer then one n,is equivalent to a rest of duration n-1
         
         # Verse 3 
     	verse1
@@ -27,5 +30,13 @@ track "main":
         !4/4
         <1 :1  # Whole note duration (lower octave)
         
-        [ do/mi/sol | sol/si/re | fa/la/do | mi/sol/si | ]*2
+        # these 2 lines are equivalent in terms of creating chords
+	do/mi/sol | sol/si/re | fa/la/do | mi/sol/si | 
+
+        do 0 mi 0 sol | sol 0 si 0 re | fa 0 la 0 do | mi 0 sol 0 si | 
+	#  ^ duration of 0 is equivalent to the notes playing at the same time
+	
+	# 5
+
+	#do)
 ]

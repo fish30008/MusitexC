@@ -169,7 +169,7 @@ class Parser:
                         self.idents[m_ident] = (len(self.tracks), len(self.tracks[-1].movements))
                     else:
                         tag_already_exists = f'''Tag {m_ident} already exits {self.idents[m_ident]}'''
-                        instrument_already_used = f'''Instrument {movement.instrument} was already used in this track:{self.idents[m_idents]} 
+                        instrument_already_used = f'''Instrument {movement.instrument} was already used in this track:{self.idents[m_ident]} 
 | Tip: to have the same instrument playing twice in a movement, use a tag to differentiate it:
 | x piano : do re mi
 |   piano : fa sol la

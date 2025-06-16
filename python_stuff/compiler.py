@@ -48,7 +48,8 @@ def main():
     try:
         output = sys.argv[2]
     except:
-        output = file_name.split(".")[1][1:] + ".mid"
+        output = file_name.split(".")[-2] + ".mid"
+        print(output)
         # files are in the form ./twinkle.midi , after splitting /twinkle, skip / with [1:]
     gen_midi(ast,output)
 

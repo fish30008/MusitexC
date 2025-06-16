@@ -35,8 +35,4 @@ track "main":
 
         do 0 mi 0 sol | sol 0 si 0 re | fa 0 la 0 do | mi 0 sol 0 si | 
 	#  ^ duration of 0 is equivalent to the notes playing at the same time
-	
-	# 5
-
-	#do)
 ]

@@ -1,0 +1,11 @@
+piano "melody" : [
+	!3/4 
+	:1/4
+	-la -si -re -mi 
+	^158 
+] [
+	[ fa:3/8 do.5:3/8 | do.5 la sol | ]*2
+	fa:3/8 do.5:3/8 | do.5 la/fa sol | do/sol:3/4 |
+
+
+] 

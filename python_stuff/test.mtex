@@ -1,0 +1,8 @@
+piano "melody": ^3/4 [
+	
+	do:4 0 mi 0 sol 5 do/mi/sol:4
+]
+
+piano "chord": [
+	do re mi
+]

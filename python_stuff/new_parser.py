@@ -629,7 +629,7 @@ class Parser:
             # parse notes
             note_p = self.advance()
 
-            semitone = 999 # placeholder for default value
+            semitone = 0 # placeholder for default value
             octave = -1 # placeholder for default value
             duration = -1 # placeholder for default value
             # parse semitones 
@@ -647,7 +647,7 @@ class Parser:
             if self.match(TokenType.DOT):
                 self.advance()
                 if self.match(TokenType.NUM):
-                    octave = self.advance()
+                    octave = int(self.advance().value)
 
             if self.match(TokenType.SLASH):
                 # parsing chord
@@ -680,6 +680,12 @@ class Parser:
 
                 if self.match(TokenType.NUM):
                     duration = float(self.advance().value)
+                    if self.match(TokenType.SLASH):
+                        self.advance()
+                        over = self.expect(TokenType.NUM)
+                        if over is not None:
+                            duration = duration / int(over.value)
+
                 elif self.match(TokenType.SLASH):
                     self.advance() #consume slash token
 

@@ -14,17 +14,14 @@ class gen_state:
 
         self.semitone_dict = {
             'r': 0,
-            'C': 0, 'do': 0,
-            'D': 0, 're': 0,
-            'E': 0, 'mi': 0,
-            'F': 0, 'fa': 0,
-            'G': 0, 'sol':0,
-            'A': 0, 'la': 0,
-            'B': 0, 'si': 0
-
+            'c': 0, 'do': 0,
+            'd': 0, 're': 0,
+            'e': 0, 'mi': 0,
+            'f': 0, 'fa': 0,
+            'g': 0, 'sol':0,
+            'a': 0, 'la': 0,
+            'b': 0, 'si': 0
         }
-
-        self.hold_dict = {}
 
         self.time = 0
 
@@ -75,27 +72,6 @@ def gen_mono_track(ast,output):
 
                 pass
 
-            elif isinstance(event, HoldNote):
-                try:
-                    next_state = movement.expressions[e_id+1]
-                except:
-                    next_state = event
-
-                event = event.note
-                volume = state.volume
-
-                if event.value.value.lower() == 'r':
-                    #handle rests
-                    volume = 0
-
-
-                print("TODO: implement hold note")
-                pass
-
-            elif isinstance(event, ReleaseNote):
-                print("TODO: implement release note")
-                pass
-
 
             elif isinstance(event,SetInterval):
                 #this is already handled
@@ -125,6 +101,7 @@ def gen_mono_track(ast,output):
                 if state.counter != state.meas[0]:
                     ast.err_list.append(f"Measure error({event.source.line},{event.source.column}): The measure is {state.meas[0]}/{state.meas[1]}, for this bar got {state.counter} notes instead")
 
+                print("Current measure:",state.counter)
                 state.counter = 0
 
                 pass
@@ -158,20 +135,27 @@ def gen_mono_track(ast,output):
     pass
 
 def add_note(state,next_state,event,m_id,midi):
+
+    note = event.value.value.lower()
+
+    if isinstance(next_state,ReleaseNote):
+        release_note(state,note,midi,m_id)
+        return
+
     volume = state.volume
 
     if event.value.value.lower() == 'r':
         #handle rests
         volume = 0
 
-    note = event.value.value.lower()
     note_n = note_to_midi[note]
 
-    semitone = state.semitone_dict[note] if event.semitone == 999 else event.semitone
+    semitone = state.semitone_dict[note] if event.semitone == 0 else event.semitone
 
     octave = state.oct if event.octave == -1 else event.octave
 
     pitch = note_n + semitone + 12*octave
+    print("pitch:",pitch)
 
     duration = state.dur if event.duration == -1 else event.duration
     if isinstance(duration,Fraction):
@@ -181,7 +165,6 @@ def add_note(state,next_state,event,m_id,midi):
 
     duration *= 4
 
-    
     midi.addNote(0,m_id,pitch,state.time,duration, volume)
     
     delta =  duration \
@@ -191,56 +174,17 @@ def add_note(state,next_state,event,m_id,midi):
     state.counter += delta
     state.time += delta
 
-    for entry in state.hold_dict:
-        entry[1] += delta
-
     pass
-
-def hold_note():
-    note = event.value.value.lower()
-    note_n = note_to_midi[note]
-
-    semitone = state.semitone_dict[note] if event.semitone == 999 else event.semitone
-
-    octave = state.oct if event.octave == -1 else event.octave
-
-    pitch = note_n + semitone + 12*octave
-
-    duration = state.dur if event.duration == -1 else event.duration
-    if isinstance(duration,Fraction):
-        duration = duration.x / duration.over
-    elif not (isinstance(duration,int) or isinstance(duration,float)):
-        raise ValueError(f"duration should be numeric, {duration} is {type(duration)} instead")
-
-    duration *= 4
-
-
-    midi.addNote(0,m_id,pitch,state.time,duration, volume)
-
-    delta =  duration \
-    if not isinstance(next_state,SetInterval) \
-    else int(next_state.time.value)
-
-    state.counter += delta
-    state.time += delta
-
-    for entry in state.hold_dict:
-        entry[1] += delta
-
-
-    pass
-
-
 
 note_to_midi = {
     'r':0, #rest is just a silent note
-    'C': 0, 'do': 0,
-    'D': 2, 're': 2,
-    'E': 4, 'mi': 4,
-    'F': 5, 'fa': 5,
-    'G': 7, 'sol': 7,
-    'A': 9, 'la': 9,
-    'B': 11, 'si': 11
+    'c': 0, 'do': 0,
+    'd': 2, 're': 2,
+    'e': 4, 'mi': 4,
+    'f': 5, 'fa': 5,
+    'g': 7, 'sol': 7,
+    'a': 9, 'la': 9,
+    'b': 11, 'si': 11
 }
 
 midi_instruments = {

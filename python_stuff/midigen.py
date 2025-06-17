@@ -129,8 +129,9 @@ def gen_mono_track(ast,output):
                 raise ValueError(f"	Unhandled event type in movement:{event}")
 
 
-    with open(output, "wb") as output_file:
-        midi.writeFile(output_file)    
+    if len(ast.err_list) == 0:
+        with open(output, "wb") as output_file:
+            midi.writeFile(output_file)    
 
     pass
 
